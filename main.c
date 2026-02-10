@@ -5,6 +5,8 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_render.h>
+#include <SDL3/SDL_stdinc.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <uv.h>
@@ -12,6 +14,10 @@
 #define HOST "127.0.0.1"
 #define PORT 7000
 uv_loop_t * loop;
+
+uv_poll_t poll;
+// Uint32 uv_event_t; 
+SDL_Event* read_event;
 
 
 char buffer[100];
@@ -26,6 +32,12 @@ void handle_read(uv_stream_t *server, ssize_t nread, const uv_buf_t* buf) {
         fprintf(stderr, "error echo_read");
         return;
     }
+   
+    // SDL_Event* read_event;
+	
+    // read_event->type = uv_event_t;
+
+    SDL_PushEvent(read_event);
 
     printf("result: %s\n", buf->base);
 }
@@ -45,6 +57,7 @@ void on_write_end(uv_write_t *req, int status) {
 
 void write_on_connection(char *message) {
 
+    SDL_PushEvent(read_event);
     uv_buf_t buf;
 
     buf.base = malloc(sizeof(*message));
@@ -181,6 +194,8 @@ void start_uv_thread(void* args) {
     // initialize tcp
     uv_tcp_init(loop, socket);
 
+    uv_poll_init_socket(loop, (uv_poll_t *)&poll, *(uv_os_sock_t*)(socket));
+
     // allocate the connection struct
     uv_connect_t* connect = (uv_connect_t*)malloc(sizeof(uv_connect_t));
 
@@ -202,6 +217,9 @@ static SDL_Renderer *renderer = NULL;
 
 int main(int argc, char *argv[])
 {
+	
+
+
 
 	SDL_InitSubSystem(0);
 
@@ -241,6 +259,8 @@ int main(int argc, char *argv[])
 	rect_right.w = 10;
 	rect_right.h = 100;
 
+	read_event = malloc(sizeof(SDL_Event));
+
 	pthread_t thread_id;
 	// pthread_mutex_t mutex;
 
@@ -251,13 +271,24 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	read_event->type = SDL_RegisterEvents(1);
+
+
 
 
 
 	while (true) {
+
+		// int uv_poll_event;
 	 	SDL_Event event;
 
 		    while (SDL_PollEvent(&event)) {  
+			
+			if (event.type == read_event->type) {
+				printf("uv event fired\n");
+			}
+		
+
 			// poll until all events are handled!
 			// decide what to do with this event.
 

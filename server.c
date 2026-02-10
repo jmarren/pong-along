@@ -4,7 +4,6 @@
 #include <string.h>
 #include <uv.h>
 #include <stdio.h>
-// #include <stdlib.h>
 
 #define PORT 7000
 #define BACKLOG 1000
