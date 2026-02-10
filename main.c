@@ -26,28 +26,29 @@ uv_connect_t *req;
 
 
 
-void handle_read(uv_stream_t *server, ssize_t nread, const uv_buf_t* buf) {
-    if (nread == -1) {
-        fprintf(stderr, "error echo_read");
-        return;
-    }
-
-    SDL_PushEvent(read_event);
-
-    printf("result: %s\n", buf->base);
-}
+// void handle_read(uv_stream_t *server, ssize_t nread, const uv_buf_t* buf) {
+//     if (nread == -1) {
+//         fprintf(stderr, "error echo_read");
+//         return;
+//     }
+//
+//     SDL_PushEvent(read_event);
+//
+//     // printf("result: %s\n", buf->base);
+// }
 
 void alloc_buffer(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf) {
     buf->base = malloc(suggested_size);
     buf->len = suggested_size;
 }
 
-void on_write_end(uv_write_t *req, int status) {
+void on_write_end(uv_write_t *write_req, int status) {
     if (status == -1) {
         fprintf(stderr, "error on_write_end");
         return;
     }
-    uv_read_start(req->handle, alloc_buffer, handle_read);
+	
+    free(write_req);
 }
 
 void write_on_connection(char *message) {
@@ -57,14 +58,11 @@ void write_on_connection(char *message) {
 
     buf.base = malloc(sizeof(*message));
     buf.len = strlen(message);
-    // buf->base = malloc(sizeof(char) * strlen(message));
     buf.base = message;
-    uv_stream_t *tcp = req->handle;
-    uv_write_t write_req;
+    uv_write_t* write_req = (uv_write_t*)malloc(sizeof(uv_write_t));
     int buf_count = 1;
-    printf("buf->base = %s\n", buf.base);
 
-    uv_write(&write_req, tcp, &buf, buf_count, on_write_end);
+    uv_write(write_req, req->handle, &buf, buf_count, on_write_end);
 }
 
 char* parse_message(char* msg) {
@@ -77,9 +75,6 @@ char* parse_message(char* msg) {
 	return msg;
 }
 
-// void read_data() {
-//
-// }
 void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
    if (nread < 0) {
         if (nread != UV_EOF) {
@@ -90,6 +85,7 @@ void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
 	// print the message
 	printf("nread = %zd\n", nread);
 	printf("message: %s\n", parse_message(buf->base));
+    	SDL_PushEvent(read_event);
 
     } else {
 	printf("read 0\n");
@@ -105,15 +101,9 @@ void on_connect(uv_connect_t *new_req, int status) {
         fprintf(stderr, "error on_write_end");
         return;
     }
-
+	
     req = new_req;
     uv_read_start(req->handle, alloc_buffer, read_data);
-
-    // uv_read_start((uv_stream_t*) client, alloc_buffer, handle_read);
-
-   // alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf)
-
-    printf("connected\n");
 }
 
 
