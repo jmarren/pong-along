@@ -15,8 +15,7 @@
 #define PORT 7000
 uv_loop_t * loop;
 
-uv_poll_t poll;
-// Uint32 uv_event_t; 
+// TODO: use SDL_UserEvent instead
 SDL_Event* read_event;
 
 
@@ -32,10 +31,6 @@ void handle_read(uv_stream_t *server, ssize_t nread, const uv_buf_t* buf) {
         fprintf(stderr, "error echo_read");
         return;
     }
-   
-    // SDL_Event* read_event;
-	
-    // read_event->type = uv_event_t;
 
     SDL_PushEvent(read_event);
 
@@ -72,6 +67,37 @@ void write_on_connection(char *message) {
     uv_write(&write_req, tcp, &buf, buf_count, on_write_end);
 }
 
+char* parse_message(char* msg) {
+	
+	for (int i = 0; i < (int)strlen(msg); i++) {
+		if (msg[i] == '\r') {
+			msg[i] = '\0';
+		}
+	}
+	return msg;
+}
+
+// void read_data() {
+//
+// }
+void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
+   if (nread < 0) {
+        if (nread != UV_EOF) {
+            fprintf(stderr, "Read error %s\n", uv_err_name(nread));
+            uv_close((uv_handle_t*)stream, NULL);
+        }
+    } else if (nread > 0) {
+	// print the message
+	printf("nread = %zd\n", nread);
+	printf("message: %s\n", parse_message(buf->base));
+
+    } else {
+	printf("read 0\n");
+    }
+}
+
+
+
 
 
 void on_connect(uv_connect_t *new_req, int status) {
@@ -80,9 +106,13 @@ void on_connect(uv_connect_t *new_req, int status) {
         return;
     }
 
+    req = new_req;
+    uv_read_start(req->handle, alloc_buffer, read_data);
+
+    // uv_read_start((uv_stream_t*) client, alloc_buffer, handle_read);
+
    // alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf)
 
-    req = new_req;
     printf("connected\n");
 }
 
@@ -194,7 +224,7 @@ void start_uv_thread(void* args) {
     // initialize tcp
     uv_tcp_init(loop, socket);
 
-    uv_poll_init_socket(loop, (uv_poll_t *)&poll, *(uv_os_sock_t*)(socket));
+    // uv_poll_init_socket(loop, (uv_poll_t *)&poll, *(uv_os_sock_t*)(socket));
 
     // allocate the connection struct
     uv_connect_t* connect = (uv_connect_t*)malloc(sizeof(uv_connect_t));
