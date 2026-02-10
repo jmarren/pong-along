@@ -12,6 +12,18 @@
 uv_tcp_t server;
 uv_loop_t * loop;
 
+
+char* parse_message(char* msg) {
+	
+	for (int i = 0; i < (int)strlen(msg); i++) {
+		if (msg[i] == '\r') {
+			msg[i] = '\0';
+		}
+	}
+	return msg;
+}
+
+
 void alloc_buffer(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf) {
     buf->base = (char*) malloc(suggested_size);
     buf->len = suggested_size;
@@ -34,7 +46,7 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
     } else if (nread > 0) {
 	// print the message
 	printf("nread = %zd\n", nread);
-	printf("message: %s\n", buf->base);
+	printf("message: %s\n", parse_message(buf->base));
 
 	// allocate the write request to write back
 	uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));

@@ -15,7 +15,7 @@ uv_loop_t * loop;
 
 
 char buffer[100];
-uv_buf_t buf;
+// uv_buf_t* buf;
 uv_connect_t *req;
 // uv_buf_t buf = uv_buf_init(buffer, sizeof(buffer));
 
@@ -44,13 +44,19 @@ void on_write_end(uv_write_t *req, int status) {
 }
 
 void write_on_connection(char *message) {
+
+    uv_buf_t buf;
+
+    buf.base = malloc(sizeof(*message));
     buf.len = strlen(message);
+    // buf->base = malloc(sizeof(char) * strlen(message));
     buf.base = message;
     uv_stream_t *tcp = req->handle;
     uv_write_t write_req;
     int buf_count = 1;
-    uv_write(&write_req, tcp, &buf, buf_count, on_write_end);
+    printf("buf->base = %s\n", buf.base);
 
+    uv_write(&write_req, tcp, &buf, buf_count, on_write_end);
 }
 
 
@@ -60,6 +66,8 @@ void on_connect(uv_connect_t *new_req, int status) {
         fprintf(stderr, "error on_write_end");
         return;
     }
+
+   // alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf)
 
     req = new_req;
     printf("connected\n");
@@ -306,7 +314,11 @@ int main(int argc, char *argv[])
 			}
 
 			if (key == SDLK_W) {
-				char* msg = "hi";
+				write_on_connection("hi\r\n");			
+			}
+			if (key == SDLK_K) {
+				char* msg = "bye\r\n";
+				printf("msg = %s\n", msg);
 				write_on_connection(msg);			
 			}
 		}
