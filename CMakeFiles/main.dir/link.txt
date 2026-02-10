@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/main.dir/main.c.o -o main  -Wl,-rpath,/home/john-marren/code/scratch/c/pong-along libSDL3.so.0.5.0 vendored/libuv/libuv.a -lpthread -ldl -lrt -lm 

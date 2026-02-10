@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/server.dir/server.c.o -o server  vendored/libuv/libuv.a -lpthread -ldl -lrt -lm 

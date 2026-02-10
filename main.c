@@ -63,14 +63,6 @@ void on_connect(uv_connect_t *new_req, int status) {
 
     req = new_req;
     printf("connected\n");
-    // buf = uv_buf_init(buffer, sizeof(buffer));
-    // char *message = "hello";
-    // buf.len = strlen(message);
-    // buf.base = message;
-    // uv_stream_t *tcp = req->handle;
-    // uv_write_t write_req;
-    // int buf_count = 1;
-    // uv_write(&write_req, tcp, &buf, buf_count, on_write_end);
 }
 
 
@@ -314,7 +306,8 @@ int main(int argc, char *argv[])
 			}
 
 			if (key == SDLK_W) {
-				write_on_connection("hi");			
+				char* msg = "hi";
+				write_on_connection(msg);			
 			}
 		}
 	}

@@ -33,6 +33,7 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
         }
     } else if (nread > 0) {
 	// print the message
+	printf("nread = %zd\n", nread);
 	printf("message: %s\n", buf->base);
 
 	// allocate the write request to write back
