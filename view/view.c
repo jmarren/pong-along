@@ -1,8 +1,10 @@
+#include "view.h"
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_timer.h>
+#include <SDL3/SDL_video.h>
 #include <stdio.h>
 #include "../net/net.h"
 #include "circle.h"
@@ -10,12 +12,21 @@
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 
+
+
+
+int window_left, window_top, window_right, window_bottom;
+
+
 SDL_FRect rect_left;
 SDL_FRect rect_right;
 
 
+
+
+
 int init_renderer(void) {
-    	if (!SDL_CreateWindowAndRenderer("Hello World", 1000, 100, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
+    	if (!SDL_CreateWindowAndRenderer("Hello World", WINDOW_W, WINDOW_H, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
 		SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
 		return SDL_APP_FAILURE;
     	}
@@ -50,14 +61,6 @@ void view_circle_move(void) {
 
 
 
-
-// Uint32 timer_callback(void *userdata, SDL_TimerID timerID, Uint32 interval) {
-// 	// SDL_PushEvent(&net_read_evt);
-// 	printf("tick\n");
-// 	return interval;
-// }
-
-
 void view_init(void) {
 	SDL_InitSubSystem(0);
 	init_renderer();
@@ -65,13 +68,21 @@ void view_init(void) {
 	circle_init();
 }
 
+void draw_window_borders(void) {
+	SDL_RenderLine(renderer, 0, 0, 0, WINDOW_H);
+	SDL_RenderLine(renderer, WINDOW_W, 0, WINDOW_W, WINDOW_H);
+	SDL_RenderLine(renderer, 0, 0, WINDOW_W, 0);
+	SDL_RenderLine(renderer, 0, WINDOW_H, WINDOW_W, WINDOW_H);
+
+}
+
 void view_render(void) {
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderClear(renderer);
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-	// SDL_RenderLine(renderer, 100, 100, 300, 300);
 	SDL_RenderFillRect(renderer, &rect_left);
 	SDL_RenderFillRect(renderer, &rect_right);
+	draw_window_borders();
 	circle_render(renderer);
 	SDL_RenderPresent(renderer);
 

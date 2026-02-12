@@ -8,7 +8,7 @@ typedef struct {
 } Position;
 
 typedef struct {
-	int direction; // in radians
+	float direction; // in radians
 	Position pos;
 	int speed;
 } Object;

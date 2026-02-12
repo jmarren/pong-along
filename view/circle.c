@@ -5,6 +5,7 @@
 #include <SDL3/SDL_render.h>
 #include <math.h>
 #include "physics.h"
+#include "view.h"
 
 
 
@@ -23,12 +24,10 @@ int offsetx;
 int offsety;
 
 void circle_init(void) {
-	// circle.x_velocity = 10;
-	// circle.y_velocity = 10;
 	circle.radius = 50;
-	circle.obj.pos.x = 100;
+	circle.obj.pos.x = 78;
 	circle.obj.pos.y = 100;
-	circle.obj.direction = 0.5 * M_PI;
+	circle.obj.direction = 0.25 * M_PI;
 	circle.obj.speed = 20;
 };
 
@@ -129,18 +128,22 @@ void circle_render(SDL_Renderer * renderer) {
 }
 
 
-void circle_bounce(void) {
-	circle.obj.direction += M_PI;
+void circle_bounce_wall_left_right(void) {
+	circle.obj.direction = M_PI - circle.obj.direction;
+}
 
-	// circle.x_velocity *= -1;
-	// circle.y_velocity *= 1;
+void circle_bounce_wall_top_bottom(void) {
+	circle.obj.direction = 2 * M_PI - circle.obj.direction;
 }
 
 
 void circle_move(SDL_Renderer * renderer)  {
 	physics_move_obj((Object *)&circle.obj);
-	if (circle.obj.pos.x > 700) {
-		circle_bounce();
+	if (circle.obj.pos.x > WINDOW_W || circle.obj.pos.x < 0) {
+		circle_bounce_wall_left_right();
+	}
+	if (circle.obj.pos.y > WINDOW_H || circle.obj.pos.y < 0) {
+		circle_bounce_wall_top_bottom();
 	}
 }
 
