@@ -1,4 +1,5 @@
 
+#include "circle.h"
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_log.h>
@@ -6,13 +7,6 @@
 #include <math.h>
 #include "physics.h"
 #include "view.h"
-
-
-
-typedef struct {
-	Object obj;
-	int radius;
-} Circle;
 
 Circle circle;
 
@@ -23,12 +17,13 @@ int d;
 int offsetx;
 int offsety;
 
-void circle_init(void) {
+Circle* circle_init(void) {
 	circle.radius = 50;
 	circle.obj.pos.x = 78;
 	circle.obj.pos.y = 100;
-	circle.obj.direction = 0.25 * M_PI;
-	circle.obj.speed = 20;
+	circle.obj.direction = 0.21 * M_PI;
+	circle.obj.speed = 0;
+	return &circle;
 };
 
 
@@ -128,6 +123,11 @@ void circle_render(SDL_Renderer * renderer) {
 }
 
 
+void circle_set_y(int y) {
+	circle.obj.pos.y = y;
+}
+
+
 void circle_bounce_wall_left_right(void) {
 	circle.obj.direction = M_PI - circle.obj.direction;
 }
@@ -138,13 +138,23 @@ void circle_bounce_wall_top_bottom(void) {
 
 
 void circle_move(SDL_Renderer * renderer)  {
-	physics_move_obj((Object *)&circle.obj);
-	if (circle.obj.pos.x > WINDOW_W || circle.obj.pos.x < 0) {
+	if (circle.obj.pos.x + circle.radius  >= WINDOW_W) {
+		circle.obj.pos.x = WINDOW_W - circle.radius;
 		circle_bounce_wall_left_right();
-	}
-	if (circle.obj.pos.y > WINDOW_H || circle.obj.pos.y < 0) {
+
+	} else if (circle.obj.pos.x  - circle.radius <= 0) {
+		circle.obj.pos.x = circle.radius;
+		circle_bounce_wall_left_right();
+	} else if (circle.obj.pos.y + circle.radius >= WINDOW_H) { 
+		circle.obj.pos.y = WINDOW_H - circle.radius;
+		circle_bounce_wall_top_bottom();
+
+	} else if (circle.obj.pos.y - circle.radius <= 0) {
+		circle.obj.pos.y = circle.radius;
 		circle_bounce_wall_top_bottom();
 	}
+
+	physics_move_obj((Object *)&circle.obj);
 }
 
 

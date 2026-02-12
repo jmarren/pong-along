@@ -26,7 +26,7 @@ char buffer[100];
 int main(int argc, char *argv[])
 {
 	
-	view_init();
+	App* app = view_init();
 
 	net_init();
 
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 	printf("net_read_evt->type = %d\n", net_read_evt.type);
 
 
-	loop_start();
+	loop_start(app);
 	return 0;
 }
 
