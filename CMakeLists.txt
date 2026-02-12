@@ -15,7 +15,13 @@ add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(vendored/libuv EXCLUDE_FROM_ALL)
 
 # Create your game executable target as usual
-add_executable(main WIN32 main.c)
+add_executable(main WIN32 
+	main.c 
+	view/view.c
+	view/view.h
+	net/net.c
+	net/net.h
+)
 add_executable(server WIN32 server.c)
 add_executable(client WIN32 client.c)
 
@@ -24,3 +30,6 @@ target_link_libraries(main PRIVATE SDL3::SDL3)
 target_link_libraries(main PRIVATE uv_a)
 target_link_libraries(server PRIVATE uv_a)
 target_link_libraries(client PRIVATE uv_a)
+# target_include_direc
+
+# target_link_libraries(view PRIVATE uv_a)

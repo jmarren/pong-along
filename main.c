@@ -1,3 +1,5 @@
+#include "view/view.h"
+#include "net/net.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
@@ -8,282 +10,38 @@
 #include <SDL3/SDL_stdinc.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <uv.h>
 #define MESSAGE "Hello Libuv\n"
 #define HOST "127.0.0.1"
 #define PORT 7000
+
+
 uv_loop_t * loop;
-
 // TODO: use SDL_UserEvent instead
-SDL_Event* read_event;
-
-
 char buffer[100];
-// uv_buf_t* buf;
-uv_connect_t *req;
-// uv_buf_t buf = uv_buf_init(buffer, sizeof(buffer));
 
+// SDL_Event net_read_evt;
 
-
-// void handle_read(uv_stream_t *server, ssize_t nread, const uv_buf_t* buf) {
-//     if (nread == -1) {
-//         fprintf(stderr, "error echo_read");
-//         return;
-//     }
-//
-//     SDL_PushEvent(read_event);
-//
-//     // printf("result: %s\n", buf->base);
-// }
-
-void alloc_buffer(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf) {
-    buf->base = malloc(suggested_size);
-    buf->len = suggested_size;
-}
-
-void on_write_end(uv_write_t *write_req, int status) {
-    if (status == -1) {
-        fprintf(stderr, "error on_write_end");
-        return;
-    }
-	
-    free(write_req);
-}
-
-void write_on_connection(char *message) {
-
-    SDL_PushEvent(read_event);
-    uv_buf_t buf;
-
-    buf.base = malloc(sizeof(*message));
-    buf.len = strlen(message);
-    buf.base = message;
-    uv_write_t* write_req = (uv_write_t*)malloc(sizeof(uv_write_t));
-    int buf_count = 1;
-
-    uv_write(write_req, req->handle, &buf, buf_count, on_write_end);
-}
-
-char* parse_message(char* msg) {
-	
-	for (int i = 0; i < (int)strlen(msg); i++) {
-		if (msg[i] == '\r') {
-			msg[i] = '\0';
-		}
-	}
-	return msg;
-}
-
-void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
-   if (nread < 0) {
-        if (nread != UV_EOF) {
-            fprintf(stderr, "Read error %s\n", uv_err_name(nread));
-            uv_close((uv_handle_t*)stream, NULL);
-        }
-    } else if (nread > 0) {
-	// print the message
-	printf("nread = %zd\n", nread);
-	printf("message: %s\n", parse_message(buf->base));
-    	SDL_PushEvent(read_event);
-
-    } else {
-	printf("read 0\n");
-    }
-}
-
-
-
-
-
-void on_connect(uv_connect_t *new_req, int status) {
-    if (status == -1) {
-        fprintf(stderr, "error on_write_end");
-        return;
-    }
-	
-    req = new_req;
-    uv_read_start(req->handle, alloc_buffer, read_data);
-}
-
-
-
-int
-SDL_RenderDrawCircle(SDL_Renderer * renderer, int x, int y, int radius)
-{
-    int offsetx, offsety, d;
-    int status;
-
-    // CHECK_RENDERER_MAGIC(renderer, -1);
-
-    offsetx = 0;
-    offsety = radius;
-    d = radius -1;
-    status = 0;
-
-    while (offsety >= offsetx) {
-        status += SDL_RenderPoint(renderer, x + offsetx, y + offsety);
-        status += SDL_RenderPoint(renderer, x + offsety, y + offsetx);
-        status += SDL_RenderPoint(renderer, x - offsetx, y + offsety);
-        status += SDL_RenderPoint(renderer, x - offsety, y + offsetx);
-        status += SDL_RenderPoint(renderer, x + offsetx, y - offsety);
-        status += SDL_RenderPoint(renderer, x + offsety, y - offsetx);
-        status += SDL_RenderPoint(renderer, x - offsetx, y - offsety);
-        status += SDL_RenderPoint(renderer, x - offsety, y - offsetx);
-
-        if (status < 0) {
-            status = -1;
-            break;
-        }
-
-        if (d >= 2*offsetx) {
-            d -= 2*offsetx + 1;
-            offsetx +=1;
-        }
-        else if (d < 2 * (radius - offsety)) {
-            d += 2 * offsety - 1;
-            offsety -= 1;
-        }
-        else {
-            d += 2 * (offsety - offsetx - 1);
-            offsety -= 1;
-            offsetx += 1;
-        }
-    }
-
-    return status;
-}
-
-
-int
-SDL_RenderFillCircle(SDL_Renderer * renderer, int x, int y, int radius)
-{
-    int offsetx, offsety, d;
-    int status;
-
-    // CHECK_RENDERER_MAGIC(renderer, -1);
-
-    offsetx = 0;
-    offsety = radius;
-    d = radius -1;
-    status = 0;
-
-    while (offsety >= offsetx) {
-
-        status += SDL_RenderLine(renderer, x - offsety, y + offsetx,
-                                     x + offsety, y + offsetx);
-        status += SDL_RenderLine(renderer, x - offsetx, y + offsety,
-                                     x + offsetx, y + offsety);
-        status += SDL_RenderLine(renderer, x - offsetx, y - offsety,
-                                     x + offsetx, y - offsety);
-        status += SDL_RenderLine(renderer, x - offsety, y - offsetx,
-                                     x + offsety, y - offsetx);
-
-        if (status < 0) {
-            status = -1;
-            break;
-        }
-
-        if (d >= 2*offsetx) {
-            d -= 2*offsetx + 1;
-            offsetx +=1;
-        }
-        else if (d < 2 * (radius - offsety)) {
-            d += 2 * offsety - 1;
-            offsety -= 1;
-        }
-        else {
-            d += 2 * (offsety - offsetx - 1);
-            offsety -= 1;
-            offsetx += 1;
-        }
-    }
-
-    return status;
-}
-
-
-void start_uv_thread(void* args) {
-
-    // create default loop
-    uv_loop_t* loop = uv_default_loop();
-	
-    // allocate the socket
-    uv_tcp_t* socket = (uv_tcp_t*)malloc(sizeof(uv_tcp_t));
-	
-    // initialize tcp
-    uv_tcp_init(loop, socket);
-
-    // uv_poll_init_socket(loop, (uv_poll_t *)&poll, *(uv_os_sock_t*)(socket));
-
-    // allocate the connection struct
-    uv_connect_t* connect = (uv_connect_t*)malloc(sizeof(uv_connect_t));
-
-    // build the socket destination address struct
-    struct sockaddr_in dest;
-    uv_ip4_addr("0.0.0.0", 7000, &dest);
-
-    // call connect using the on_connect callback
-    uv_tcp_connect(connect, socket, (const struct sockaddr*)&dest, on_connect);
-
-    // run the loop
-    uv_run(loop, UV_RUN_DEFAULT); // 8. Run the Event Loop
-}
-
-
-
-static SDL_Window *window = NULL;
-static SDL_Renderer *renderer = NULL;
 
 int main(int argc, char *argv[])
 {
 	
+	// SDL_Event* read_event;
+	// read_event = init_views();
+		
+		
 
+	init_views();
 
+	init_net();
 
-	SDL_InitSubSystem(0);
+	hello_world();
 
-    	if (!SDL_CreateWindowAndRenderer("Hello World", 1000, 100, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
-		SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
-		return SDL_APP_FAILURE;
-    	}
-
-
-   	const char *message = "Hello World!";
-   	int w = 0, h = 0;
-   	float x, y;
-   	const float scale = 1.0f;
-
-   	/* Center the message and scale it up */
-   	SDL_GetRenderOutputSize(renderer, &w, &h);
-   	SDL_SetRenderScale(renderer, scale, scale);
-   	x = ((w / scale) - SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * SDL_strlen(message)) / 2;
-   	y = ((h / scale) - SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE) / 2;
-
-   	/* Draw the message */
-   	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-   	SDL_RenderClear(renderer);
-   	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-   	SDL_RenderDebugText(renderer, x, y, message);
-   	SDL_RenderPresent(renderer);
-
-	SDL_FRect rect_left;
-	rect_left.x = 100;
-	rect_left.y = 100;
-	rect_left.w = 10;
-	rect_left.h = 100;
-
-	SDL_FRect rect_right;
-	rect_right.x = 1000;
-	rect_right.y = 100;
-	rect_right.w = 10;
-	rect_right.h = 100;
-
-	read_event = malloc(sizeof(SDL_Event));
 
 	pthread_t thread_id;
 	// pthread_mutex_t mutex;
 
+	// TODO:  Use specialized lib threads instead
   	int result = pthread_create(&thread_id, NULL, (void*)&start_uv_thread, NULL);
 
         if (result != 0) {
@@ -291,20 +49,16 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	read_event->type = SDL_RegisterEvents(1);
-
-
-
+	printf("net_read_evt->type = %d\n", net_read_evt.type);
 
 
 	while (true) {
 
-		// int uv_poll_event;
 	 	SDL_Event event;
 
 		    while (SDL_PollEvent(&event)) {  
 			
-			if (event.type == read_event->type) {
+			if (event.type == net_read_evt.type) {
 				printf("uv event fired\n");
 			}
 		
@@ -323,45 +77,15 @@ int main(int argc, char *argv[])
 
 	
 			if (event.key.key == SDLK_UP) {	
-				rect_left.y -= 36;
-				SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-				SDL_RenderClear(renderer);
-				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-				// SDL_RenderLine(renderer, 100, 100, 300, 300);
-				SDL_RenderFillRect(renderer, &rect_left);
-				SDL_RenderFillRect(renderer, &rect_right);
-				SDL_RenderDrawCircle(renderer, 120, 120, 50);
-				SDL_RenderFillCircle(renderer, 120, 120, 50);
-				// SDL_RenderDebugText(renderer, x, y, "hi john");
-				SDL_RenderPresent(renderer);
-
+				handle_up();		
 			}
 			
 			if (event.key.key == SDLK_DOWN) {	
-				rect_left.y += 36;
-				SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-				SDL_RenderClear(renderer);
-				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-				// SDL_RenderLine(renderer, 100, 100, 300, 300);
-				SDL_RenderFillRect(renderer, &rect_left);
-				SDL_RenderFillRect(renderer, &rect_right);
-				SDL_RenderDrawCircle(renderer, 120, 120, 50);
-				SDL_RenderFillCircle(renderer, 120, 120, 50);
-				// SDL_RenderDebugText(renderer, x, y, "hi john");
-				SDL_RenderPresent(renderer);
-
+				handle_down();
 			}
 			
 			if (event.key.key == SDLK_H) {
-				SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-				SDL_RenderClear(renderer);
-				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-				// SDL_RenderLine(renderer, 100, 100, 300, 300);
-				// rect.x++;
-				
-				SDL_RenderFillRect(renderer, &rect_left);
-				// SDL_RenderDebugText(renderer, x, y, "hi john");
-				SDL_RenderPresent(renderer);
+				handle_h();
 			}
 
 			if (key == SDLK_W) {
