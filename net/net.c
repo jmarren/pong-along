@@ -6,11 +6,7 @@
 uv_connect_t *req;
 SDL_Event net_read_evt;
 
-void init_net(void) {
-	net_read_evt.type = SDL_RegisterEvents(1);
-	printf("net_read_event->type = %d\n", net_read_evt.type);
-}
-
+/* PRIVATE */
 void alloc_buffer(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf) {
     buf->base = malloc(suggested_size);
     buf->len = suggested_size;
@@ -25,18 +21,6 @@ void on_write_end(uv_write_t *write_req, int status) {
     free(write_req);
 }
 
-void write_on_connection(char *message) {
-
-    uv_buf_t buf;
-
-    buf.base = malloc(sizeof(*message));
-    buf.len = strlen(message);
-    buf.base = message;
-    uv_write_t* write_req = (uv_write_t*)malloc(sizeof(uv_write_t));
-    int buf_count = 1;
-
-    uv_write(write_req, req->handle, &buf, buf_count, on_write_end);
-}
 
 char* parse_message(char* msg) {
 	
@@ -47,6 +31,7 @@ char* parse_message(char* msg) {
 	}
 	return msg;
 }
+
 
 void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
    if (nread < 0) {
@@ -66,6 +51,28 @@ void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
 }
 
 
+/* PUBLIC */
+void net_init(void) {
+	net_read_evt.type = SDL_RegisterEvents(1);
+	printf("net_read_event->type = %d\n", net_read_evt.type);
+}
+
+void net_write(char *message) {
+
+    uv_buf_t buf;
+
+    buf.base = malloc(sizeof(*message));
+    buf.len = strlen(message);
+    buf.base = message;
+    uv_write_t* write_req = (uv_write_t*)malloc(sizeof(uv_write_t));
+    int buf_count = 1;
+
+    uv_write(write_req, req->handle, &buf, buf_count, on_write_end);
+}
+
+
+
+
 
 
 
@@ -82,7 +89,7 @@ void on_connect(uv_connect_t *new_req, int status) {
 
 
 
-void start_uv_thread(void* args) {
+void net_start(void* args) {
 
     // create default loop
     uv_loop_t* loop = uv_default_loop();

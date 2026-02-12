@@ -2,17 +2,17 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_render.h>
+#include <SDL3/SDL_timer.h>
 #include <stdio.h>
 #include "../net/net.h"
+#include "circle.h"
 
-SDL_Event read_evt;
-
-static int init_renderer(void);
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 
 SDL_FRect rect_left;
 SDL_FRect rect_right;
+
 
 int init_renderer(void) {
     	if (!SDL_CreateWindowAndRenderer("Hello World", 1000, 100, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
@@ -22,6 +22,7 @@ int init_renderer(void) {
 
 	return 0;
 }
+
 
 int init_rects(void) {
 	// init rect_left
@@ -41,143 +42,60 @@ int init_rects(void) {
 
 
 
-void init_views(void) {
-	// read_evt.type = SDL_RegisterEvents(1);
-	// printf("set read_evt.type = %d\n", read_evt.type);
-	//
-	// init_net(read_evt);
-	//
-	SDL_InitSubSystem(0);
 
+void view_circle_move(void) { 
+	circle_move(renderer);
+}
+
+
+
+
+
+// Uint32 timer_callback(void *userdata, SDL_TimerID timerID, Uint32 interval) {
+// 	// SDL_PushEvent(&net_read_evt);
+// 	printf("tick\n");
+// 	return interval;
+// }
+
+
+void view_init(void) {
+	SDL_InitSubSystem(0);
 	init_renderer();
 	init_rects();
-	
+	circle_init();
+}
+
+void view_render(void) {
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	SDL_RenderClear(renderer);
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+	// SDL_RenderLine(renderer, 100, 100, 300, 300);
+	SDL_RenderFillRect(renderer, &rect_left);
+	SDL_RenderFillRect(renderer, &rect_right);
+	circle_render(renderer);
+	SDL_RenderPresent(renderer);
+
 }
 
 
-int SDL_RenderDrawCircle(SDL_Renderer * renderer, int x, int y, int radius)
-{
-    int offsetx, offsety, d;
-    int status;
 
-
-    offsetx = 0;
-    offsety = radius;
-    d = radius -1;
-    status = 0;
-
-    while (offsety >= offsetx) {
-        status += SDL_RenderPoint(renderer, x + offsetx, y + offsety);
-        status += SDL_RenderPoint(renderer, x + offsety, y + offsetx);
-        status += SDL_RenderPoint(renderer, x - offsetx, y + offsety);
-        status += SDL_RenderPoint(renderer, x - offsety, y + offsetx);
-        status += SDL_RenderPoint(renderer, x + offsetx, y - offsety);
-        status += SDL_RenderPoint(renderer, x + offsety, y - offsetx);
-        status += SDL_RenderPoint(renderer, x - offsetx, y - offsety);
-        status += SDL_RenderPoint(renderer, x - offsety, y - offsetx);
-
-        if (status < 0) {
-            status = -1;
-            break;
-        }
-
-        if (d >= 2*offsetx) {
-            d -= 2*offsetx + 1;
-            offsetx +=1;
-        }
-        else if (d < 2 * (radius - offsety)) {
-            d += 2 * offsety - 1;
-            offsety -= 1;
-        }
-        else {
-            d += 2 * (offsety - offsetx - 1);
-            offsety -= 1;
-            offsetx += 1;
-        }
-    }
-
-    return status;
-}
-
-
-int
-SDL_RenderFillCircle(SDL_Renderer * renderer, int x, int y, int radius)
-{
-    int offsetx, offsety, d;
-    int status;
-
-
-    offsetx = 0;
-    offsety = radius;
-    d = radius -1;
-    status = 0;
-
-    while (offsety >= offsetx) {
-
-        status += SDL_RenderLine(renderer, x - offsety, y + offsetx,
-                                     x + offsety, y + offsetx);
-        status += SDL_RenderLine(renderer, x - offsetx, y + offsety,
-                                     x + offsetx, y + offsety);
-        status += SDL_RenderLine(renderer, x - offsetx, y - offsety,
-                                     x + offsetx, y - offsety);
-        status += SDL_RenderLine(renderer, x - offsety, y - offsetx,
-                                     x + offsety, y - offsetx);
-
-        if (status < 0) {
-            status = -1;
-            break;
-        }
-
-        if (d >= 2*offsetx) {
-            d -= 2*offsetx + 1;
-            offsetx +=1;
-        }
-        else if (d < 2 * (radius - offsety)) {
-            d += 2 * offsety - 1;
-            offsety -= 1;
-        }
-        else {
-            d += 2 * (offsety - offsetx - 1);
-            offsety -= 1;
-            offsetx += 1;
-        }
-    }
-
-    return status;
-}
-
-
-void handle_up(void) {
+void view_handle_up(void) {
 
 	rect_left.y -= 36;
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	SDL_RenderClear(renderer);
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-	// SDL_RenderLine(renderer, 100, 100, 300, 300);
-	SDL_RenderFillRect(renderer, &rect_left);
-	SDL_RenderFillRect(renderer, &rect_right);
-	SDL_RenderDrawCircle(renderer, 120, 120, 50);
-	SDL_RenderFillCircle(renderer, 120, 120, 50);
-	// SDL_RenderDebugText(renderer, x, y, "hi john");
-	SDL_RenderPresent(renderer);
+	char buffer[40];
+	snprintf(buffer, sizeof(buffer), "rect-left=%.lf\r\n", rect_left.y);
+	net_write((char *)&buffer);
 }
 
 
-void handle_down(void) {
+void view_handle_down(void) {
 	rect_left.y += 36;
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	SDL_RenderClear(renderer);
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-	// SDL_RenderLine(renderer, 100, 100, 300, 300);
-	SDL_RenderFillRect(renderer, &rect_left);
-	SDL_RenderFillRect(renderer, &rect_right);
-	SDL_RenderDrawCircle(renderer, 120, 120, 50);
-	SDL_RenderFillCircle(renderer, 120, 120, 50);
-	// SDL_RenderDebugText(renderer, x, y, "hi john");
-	SDL_RenderPresent(renderer);
+	char buffer[40];
+	snprintf(buffer, sizeof(buffer), "rect-left=%.lf\r\n", rect_left.y);
+	net_write((char *)&buffer);
 }
 
-void handle_h(void) {
+void view_handle_h(void) {
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderClear(renderer);
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -185,7 +103,7 @@ void handle_h(void) {
 	SDL_RenderPresent(renderer);
 }
 
-int hello_world(void) {
+void view_hello_world(void) {
    	const char *message = "Hello World!";
    	int w = 0, h = 0;
    	float x, y;

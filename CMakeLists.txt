@@ -21,6 +21,12 @@ add_executable(main WIN32
 	view/view.h
 	net/net.c
 	net/net.h
+	loop/loop.c
+	loop/loop.h
+	view/circle.c
+	view/circle.h
+	view/physics.c
+	view/physics.h
 )
 add_executable(server WIN32 server.c)
 add_executable(client WIN32 client.c)
