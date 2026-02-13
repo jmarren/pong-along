@@ -1,0 +1,7 @@
+
+-- SDL3 API by category
+     - https://wiki.libsdl.org/SDL3/APIByCategory
+
+-- example of SDL_ttf
+     - https://github.com/libsdl-org/SDL_ttf/blob/main/docs/hello.c
+     - https://github.com/Ravbug/sdl3-sample

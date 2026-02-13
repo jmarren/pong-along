@@ -51,12 +51,6 @@ void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
 }
 
 
-/* PUBLIC */
-void net_init(void) {
-	net_read_evt.type = SDL_RegisterEvents(1);
-	printf("net_read_event->type = %d\n", net_read_evt.type);
-}
-
 void net_write(char *message) {
 
     uv_buf_t buf;
@@ -68,6 +62,12 @@ void net_write(char *message) {
     int buf_count = 1;
 
     uv_write(write_req, req->handle, &buf, buf_count, on_write_end);
+}
+
+/* PUBLIC */
+void net_init(void) {
+	net_read_evt.type = SDL_RegisterEvents(1);
+	printf("net_read_event->type = %d\n", net_read_evt.type);
 }
 
 
@@ -84,6 +84,8 @@ void on_connect(uv_connect_t *new_req, int status) {
 	
     req = new_req;
     uv_read_start(req->handle, alloc_buffer, read_data);
+
+    net_write("players?\r\n");
 }
 
 

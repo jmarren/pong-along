@@ -4,6 +4,7 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_log.h>
+#include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_timer.h>
 #include <math.h>
@@ -81,6 +82,26 @@ int handle_events(App* app) {
 						return QUIT;
 					}
 					break;
+				 case SDL_EVENT_MOUSE_BUTTON_DOWN:
+					float x, y;
+					SDL_GetMouseState(&x, &y);
+					
+					if (x > app->dashboard_textbox.x &&
+					    x < app->dashboard_textbox.x + app->dashboard_textbox.w &&
+					    y > app->dashboard_textbox.y && 
+					    y < app->dashboard_textbox.y + app->dashboard_textbox.h) {
+		
+						printf("textbox clicked\n");
+					}
+
+
+
+
+
+					// if (event.
+					// SDL_MouseButtonEvent event;
+					//  event.x
+					// if (
 			 }
 		 }
 
@@ -141,7 +162,6 @@ void loop_start(App* app) {
 		   if (app->game_started) {
 			   handle_collisions(app);
 			   circle_move(app);
-
 		   } else {
 			app->circle.obj.pos.y = app->rect_left.y + app->rect_left.h / 2;
 			app->circle.obj.pos.x = app->rect_left.x + app->circle.radius + 10;
