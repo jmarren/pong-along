@@ -17,6 +17,7 @@ add_subdirectory(vendored/libuv EXCLUDE_FROM_ALL)
 # Create your game executable target as usual
 add_executable(main WIN32 
 	main.c 
+	app.h
 	view/view.c
 	view/view.h
 	net/net.c

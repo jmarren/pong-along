@@ -1,3 +1,4 @@
+#include "app.h"
 #include "view/view.h"
 #include "net/net.h"
 #include "loop/loop.h"
@@ -16,21 +17,17 @@
 #define HOST "127.0.0.1"
 #define PORT 7000
 
-
-uv_loop_t * loop;
-// TODO: use SDL_UserEvent instead
-char buffer[100];
-
-
+App app;
 
 int main(int argc, char *argv[])
 {
+	app.game_started = false;
 	
-	App* app = view_init();
+	view_init(&app);
 
 	net_init();
 
-	view_hello_world();
+	// view_hello_world();
 
 
 	pthread_t thread_id;
@@ -47,7 +44,7 @@ int main(int argc, char *argv[])
 	printf("net_read_evt->type = %d\n", net_read_evt.type);
 
 
-	loop_start(app);
+	loop_start(&app);
 	return 0;
 }
 
