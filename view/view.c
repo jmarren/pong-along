@@ -10,9 +10,10 @@
 #include "circle.h"
 #include "dashboard.h"
 #include "../vendored/SDL_ttf/include/SDL3_ttf/SDL_ttf.h"
+#include "text.h"
 
 
-static SDL_Texture *texture = NULL;
+// static SDL_Texture *texture = NULL;
 static TTF_Font *font = NULL;
 
 extern unsigned char tiny_ttf[];
@@ -31,10 +32,10 @@ int init_renderer(App* app) {
 	}
 
 
-	  /* Open the font */
-       font = TTF_OpenFontIO(SDL_IOFromConstMem(tiny_ttf, tiny_ttf_len), true, 18.0f);
+	/* Open the font */
+        font = TTF_OpenFontIO(SDL_IOFromConstMem(tiny_ttf, tiny_ttf_len), true, 18.0f);
 
-       if (!font) {
+        if (!font) {
 	  SDL_Log("Couldn't open font: %s\n", SDL_GetError());
 	  return SDL_APP_FAILURE;
         }
@@ -108,26 +109,7 @@ void view_render(App *app) {
 		dashboard_render(app);
 	}
 
-	SDL_Color color = { 244,  200, 255, SDL_ALPHA_OPAQUE };
-	SDL_Surface *text;
-
-	 /* Create the text */
-	text = TTF_RenderText_Blended(font, "Hello World!", 0, color);
-	if (text) {
-	    texture = SDL_CreateTextureFromSurface(renderer, text);
-	    SDL_DestroySurface(text);
-	}
-	if (!texture) {
-	    SDL_Log("Couldn't create text: %s\n", SDL_GetError());
-	}
-
-	SDL_FRect dst;
-	
-    	SDL_GetTextureSize(texture, &dst.w, &dst.h);
-	dst.x = 500;
-	dst.y = 500;
-
-	SDL_RenderTexture(renderer, texture, NULL, &dst);
+	// text_render(app, "hi");
 
 	SDL_RenderPresent(renderer);
 }

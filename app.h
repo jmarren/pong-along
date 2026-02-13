@@ -17,11 +17,13 @@ typedef struct {
 	SDL_Renderer* renderer;
 	SDL_FRect rect_left;
 	SDL_FRect rect_right;
-	SDL_FRect dashboard_textbox;
+	const SDL_Rect* dashboard_textbox;
+	SDL_FRect dashboard_textbox_container;
 	Circle circle;
 	SDL_Window* window;
 	bool game_started;
 	TTF_Font * font;
+	char* text_input;
 } App;
 
 #endif

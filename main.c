@@ -12,6 +12,7 @@
 #include <SDL3/SDL_stdinc.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <uv.h>
 #define MESSAGE "Hello Libuv\n"
 #define HOST "127.0.0.1"
@@ -22,7 +23,11 @@ App app;
 int main(int argc, char *argv[])
 {
 	app.game_started = false;
+
+	app.text_input = (char*)calloc(100, sizeof(char));
 	
+	strncpy(app.text_input, "", 2);
+
 	view_init(&app);
 
 	net_init();

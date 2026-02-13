@@ -26,6 +26,8 @@ add_executable(main WIN32
 	view/view.h
 	view/dashboard.c
 	view/dashboard.h
+	view/text.c
+	view/text.h
 	net/net.c
 	net/net.h
 	loop/loop.c

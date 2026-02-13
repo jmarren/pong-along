@@ -10,12 +10,18 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "../view/view.h"
 #include "../view/circle.h"
 
 #define QUIT 1
 #define CONTINUE 0
 
+char *input_text;
+char *composition;
+Sint32 cursor;
+Sint32 selection_len;
 
 void handle_space(App* app) {
 	app->game_started = true;
@@ -82,17 +88,38 @@ int handle_events(App* app) {
 						return QUIT;
 					}
 					break;
+
+				case SDL_EVENT_TEXT_INPUT:
+				    printf("event text input\n");
+				    app->text_input = strncat(app->text_input, event.text.text, 1);
+				    break;
+				case SDL_EVENT_TEXT_EDITING:
+				    printf("event text editing\n");
+				    /*
+				    Update the composition text.
+				    Update the cursor position.
+				    Update the selection length (if any).
+				    */
+				    // composition = event.edit.text;
+				    cursor = event.edit.start;
+				    selection_len = event.edit.length;
+				    break;
 				 case SDL_EVENT_MOUSE_BUTTON_DOWN:
+				    	printf("event mouse button down\n");
 					float x, y;
 					SDL_GetMouseState(&x, &y);
-					
-					if (x > app->dashboard_textbox.x &&
-					    x < app->dashboard_textbox.x + app->dashboard_textbox.w &&
-					    y > app->dashboard_textbox.y && 
-					    y < app->dashboard_textbox.y + app->dashboard_textbox.h) {
-		
+
+					if (x > app->dashboard_textbox_container.x &&
+					    x < app->dashboard_textbox_container.x + app->dashboard_textbox_container.w &&
+					    y > app->dashboard_textbox_container.y && 
+					    y < app->dashboard_textbox_container.y + app->dashboard_textbox_container.h) {
+
 						printf("textbox clicked\n");
 					}
+
+					SDL_StartTextInput(app->window);
+
+				break;
 
 
 
@@ -144,6 +171,8 @@ void handle_collisions(App *app) {
 
 
 void loop_start(App* app) {
+
+	input_text = malloc(sizeof(char) * 100);
 	
 	int ticks = SDL_GetTicks();
 
