@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	app.text_input = (char*)calloc(100, sizeof(char));
 	app.username = (char*)calloc(100, sizeof(char));
 	
-	strncpy(app.text_input, "", 2);
+	// strncpy(app.text_input, "", 0);
 
 	view_init(&app);
 

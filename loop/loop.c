@@ -15,6 +15,7 @@
 #include <string.h>
 #include "../view/view.h"
 #include "../view/circle.h"
+#include "../net/net.h"
 
 #define QUIT 1
 #define CONTINUE 0
@@ -83,8 +84,14 @@ int handle_keydown(App* app, SDL_Event* event) {
 						break;
 					case SDLK_RETURN:
 						SDL_StopTextInput(app->window);
+						// strncpy(req_msg, 
+						// strcat(char *restrict dest, const char *restrict src)
 						strncpy(app->username, app->text_input, 100);
 						app->game_phase = pointing;
+						char* req_msg = malloc(strlen("username: ") + sizeof(app->username));
+						strncpy(req_msg, "username: ", strlen("username: "));
+						strcat(req_msg, app->username);
+						net_write(req_msg);
 						break;
 				}
 			}
@@ -110,43 +117,10 @@ int handle_events(App* app) {
 					break;
 
 				case SDL_EVENT_TEXT_INPUT:
-				    printf("event text input\n");
-				    printf("event.text.text = %s\n", event.text.text);
-
 				    if (strlen(app->text_input) < 99) {
 				    	app->text_input = strncat(app->text_input, event.text.text, 1);
 				    }
 				    break;
-				case SDL_EVENT_TEXT_EDITING:
-				    printf("event text editing\n");
-				    cursor = event.edit.start;
-				    selection_len = event.edit.length;
-				    break;
-				//  case SDL_EVENT_MOUSE_BUTTON_DOWN:
-				//     	printf("event mouse button down\n");
-				// 	float x, y;
-				// 	SDL_GetMouseState(&x, &y);
-				//
-				// 	if (x > app->dashboard_textbox_container.x &&
-				// 	    x < app->dashboard_textbox_container.x + app->dashboard_textbox_container.w &&
-				// 	    y > app->dashboard_textbox_container.y && 
-				// 	    y < app->dashboard_textbox_container.y + app->dashboard_textbox_container.h) {
-				//
-				// 		printf("textbox clicked\n");
-				// 	}
-				//
-				// 	SDL_StartTextInput(app->window);
-				//
-				// break;
-				//
-
-
-
-
-					// if (event.
-					// SDL_MouseButtonEvent event;
-					//  event.x
-					// if (
 			 }
 		 }
 

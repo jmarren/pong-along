@@ -1,5 +1,6 @@
 
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <uv.h>
@@ -11,16 +12,63 @@
 uv_tcp_t server;
 uv_loop_t * loop;
 
+typedef struct {
+	char* username;
+	char* addr;
+} User;
 
-char* parse_message(char* msg) {
-	
+typedef struct {
+	char* type;
+	char* content;
+} Message;
+
+
+
+void trim_message(char* msg) {
 	for (int i = 0; i < (int)strlen(msg); i++) {
 		if (msg[i] == '\r') {
 			msg[i] = '\0';
 		}
 	}
-	return msg;
 }
+
+Message parse_message(char* msg) {
+	Message message;
+	
+	int colon_index = 0;
+	bool found = false;
+
+ 
+	for (int i = 0; i < (int)strlen(msg); i++) {
+		if (msg[i] == ':') {
+			colon_index = i;
+			found = true;
+			break;
+		} 
+	}
+
+	if (!found) {
+		message.type = "unknown";
+		message.content = msg;
+	}
+
+	printf("colon_index =  %d\n", colon_index);
+	
+	size_t type_len = colon_index * sizeof(char) + 1;
+	size_t content_len = strlen(msg) - type_len + 1; 
+
+
+	message.type = (char*)malloc(type_len);
+	message.content = (char*)malloc(content_len);
+
+	strncpy(message.type, msg, colon_index);
+	strncpy(message.content, &msg[colon_index + 2], content_len - 1);
+	
+	return message;
+}
+
+
+
 
 
 void alloc_buffer(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf) {
@@ -43,9 +91,39 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
             uv_close((uv_handle_t*) client, NULL);
         }
     } else if (nread > 0) {
+	
+	printf("raw message = %s\n", buf->base);
+
+	trim_message(buf->base);
+
+	printf("trimmed = %s\n", buf->base);
+
+	Message message = parse_message(buf->base);
+
+	printf("message.type = %s\n", message.type);
+	printf("message.content = %s\n", message.content);
+
+	// if (strcmp(msg_type, "username") == 0) {
+	// 	printf("got username\n");
+	// }
+
+	// switch (msg_type) {
+	// 	case "username":
+	// 		printf("got username\n");
+	// 		break;
+	// }
+
+	// printf("message type =  %s\n", msg_type);
+	
+
 	// print the message
-	printf("nread = %zd\n", nread);
-	printf("message: %s\n", parse_message(buf->base));
+	// printf("nread = %zd\n", nread);
+	// printf("message: %s\n", buf->base);
+	
+
+
+	// if (
+
 
 	// allocate the write request to write back
 	uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
