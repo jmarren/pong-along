@@ -41,10 +41,10 @@ typedef struct {
 RawMessageList parse_messages(char* raw) {
 	RawMessageList msgs;
 	msgs.count = 0;
-	msgs.messages = malloc(50 * sizeof(char*));
+	msgs.messages = calloc(50, sizeof(char*));
 	
 	
-	int* parse_indices = malloc(sizeof(int) * 10);
+	int* parse_indices = calloc(10, sizeof(int));
 	int num_indices = 0;
 
 	// get indices of /r/n delimiter
@@ -59,8 +59,10 @@ RawMessageList parse_messages(char* raw) {
 	
 	// copy contents into msgs
 	for (int i = 0; i < num_indices; i++) {
-		msgs.messages[msgs.count] = malloc(parse_indices[i] - start_index);
+		msgs.messages[msgs.count] = calloc(sizeof(char), parse_indices[i] - start_index);
 		strncpy(msgs.messages[msgs.count], &raw[start_index], parse_indices[i] - start_index);
+		printf("msgs.messages[msgs.count] = %s\n", msgs.messages[msgs.count]);
+
 		start_index = parse_indices[i] + 2;
 		msgs.count++;
 	}
@@ -94,6 +96,8 @@ Message parse_message(char* msg) {
 	int colon_index = 0;
 	bool found = false;
 
+
+	printf("parsing %s\n", msg);
  
 	for (int i = 0; i < (int)strlen(msg); i++) {
 		if (msg[i] == ':') {
@@ -113,8 +117,8 @@ Message parse_message(char* msg) {
 	size_t type_len = colon_index * sizeof(char) + 1;
 	size_t content_len = strlen(msg) - type_len + 1; 
 
-	message.type = (char*)malloc(type_len);
-	message.content = (char*)malloc(content_len);
+	message.type = (char*)calloc(sizeof(char), type_len);
+	message.content = (char*)calloc(sizeof(char), content_len);
 
 	strncpy(message.type, msg, colon_index);
 	strncpy(message.content, &msg[colon_index + 2], content_len - 1);
@@ -176,10 +180,55 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
 		Message msg = parse_message(msg_list.messages[i]);
 		printf("msg %d = {\n %s \n %s\n}\n", i, msg.type, msg.content);
 
+		if (strcmp(msg.type, "username") == 0) {
+			printf("got new user request\n");
+			// create a new user
+			User user = {
+				msg.content,
+				client,
+			};
+
+			// add the user to active_users
+			active_users.users[active_users.count] = user;
+			active_users.count++;
+		}
+
 		if (strcmp(msg.content, "players?") == 0) {
-			UserList other_users;
-			get_other_users(client, &other_users);
-			printf("other users: %s\n", other_users.users->username);
+			printf("players query\n");
+			// UserList other_users;
+			// get_other_users(client, &other_users);
+			// printf("other users: %s\n", other_users.users->username);
+				
+			// printf("other_users.count: %d\n", other_users.count);
+			
+			printf("active_users.count: %d\n", active_users.count);
+
+			char* res = calloc(100, sizeof(char));
+
+			strncpy(res, "players: ", strlen("players: "));
+			
+			for (int i = 0; i < active_users.count; i++) {
+				strcat(res, active_users.users[i].username);
+				strcat(res, ", ");
+			}
+			
+			// append delimiter
+			strcat(res, "\r\n");
+		
+			printf("res: %s\n", res);
+
+
+			// initialize the write buffer with the size of the message that was read (to echo back)
+			uv_buf_t wrbuf = uv_buf_init(res, 100);
+				
+			
+			// allocate the write request to write back
+			uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
+
+			// write the message back to the client
+			// with buf len of 1 and a write callback that 
+			// frees the write request
+			uv_write(req, client, &wrbuf, 1, write_callback);
 		}
 	}
 	fflush(stdout);
@@ -188,27 +237,17 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
 	// Message message = parse_message(buf->base);
 	//
 	// // if message is a username add to active_users
-	// if (strcmp(message.type, "username") == 0) {
-	// 	// create a new user
-	// 	User user = {
-	// 		message.content,
-	// 		client,
-	// 	};
-	//
-	// 	// add the user to active_users
-	// 	active_users.users[active_users.count] = user;
-	// }
 	//
 	// allocate the write request to write back
-	uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
-
-	// initialize the write buffer with the size of the message that was read (to echo back)
-	uv_buf_t wrbuf = uv_buf_init(buf->base, nread);
-
-	// write the message back to the client
-	// with buf len of 1 and a write callback that 
-	// frees the write request
-        uv_write(req, client, &wrbuf, 1, write_callback);
+	// uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
+	//
+	// // initialize the write buffer with the size of the message that was read (to echo back)
+	// uv_buf_t wrbuf = uv_buf_init(buf->base, nread);
+	//
+	// // write the message back to the client
+	// // with buf len of 1 and a write callback that 
+	// // frees the write request
+	//        uv_write(req, client, &wrbuf, 1, write_callback);
     } else {
 	printf("read 0\n");
     }
