@@ -83,15 +83,34 @@ int handle_keydown(App* app, SDL_Event* event) {
 
 						break;
 					case SDLK_RETURN:
+
+						// stop taking input
 						SDL_StopTextInput(app->window);
-						// strncpy(req_msg, 
-						// strcat(char *restrict dest, const char *restrict src)
+
+						// copy text_input to username
 						strncpy(app->username, app->text_input, 100);
+
+						// set game phase to pointing
 						app->game_phase = pointing;
-						char* req_msg = malloc(strlen("username: ") + sizeof(app->username));
+
+						// calculate length of request message
+						size_t req_msg_len = strlen("username: \r\n") + strlen(app->username) + 1;
+
+						// calloc tcp request message
+						char* req_msg = calloc(req_msg_len, sizeof(char));
+	
+						//  copy "username: " to req_message
 						strncpy(req_msg, "username: ", strlen("username: "));
+				
+						// append the username to the end of req_msg
 						strcat(req_msg, app->username);
+						strcat(req_msg, "\r\n");
+						printf("req_msg = %s\n", req_msg);
+
+						// write the req_msg to the connection
 						net_write(req_msg);
+						net_write("players?\r\n");
+
 						break;
 				}
 			}

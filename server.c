@@ -14,7 +14,7 @@ uv_loop_t * loop;
 
 typedef struct {
 	char* username;
-	char* addr;
+	uv_stream_t* stream;
 } User;
 
 typedef struct {
@@ -22,6 +22,62 @@ typedef struct {
 	char* content;
 } Message;
 
+
+User* users_online;
+
+typedef struct {
+	User* users;
+	int count;
+} UserList;
+
+UserList active_users;
+
+typedef struct {
+	char** messages;
+	int count;
+} RawMessageList;
+
+
+RawMessageList parse_messages(char* raw) {
+	RawMessageList msgs;
+	msgs.count = 0;
+	msgs.messages = malloc(50 * sizeof(char*));
+	
+	
+	int* parse_indices = malloc(sizeof(int) * 10);
+	int num_indices = 0;
+
+	// get indices of /r/n delimiter
+	for (int i = 0; i < (int)strlen(raw) - 1; i++) {
+		if (raw[i] == '\r' && raw[i+1] == '\n') {
+			parse_indices[num_indices] = i;
+			num_indices++;
+		} 
+	}
+	
+	int start_index = 0;
+	
+	// copy contents into msgs
+	for (int i = 0; i < num_indices; i++) {
+		msgs.messages[msgs.count] = malloc(parse_indices[i] - start_index);
+		strncpy(msgs.messages[msgs.count], &raw[start_index], parse_indices[i] - start_index);
+		start_index = parse_indices[i] + 2;
+		msgs.count++;
+	}
+
+
+	return msgs;
+}
+
+			// // allocate space for message in list
+			// msgs.messages[msgs.count] = malloc(strlen(curr_msg) + 1);
+			//
+			// // copy the current message to the 
+			// strncpy(msgs.messages[msgs.count], &raw[i], strlen(curr_msg));
+			// printf("found msg: %s\n", curr_msg);
+			// i+=2;
+			// curr_msg = "\0";
+			// msgs.count++;
 
 
 void trim_message(char* msg) {
@@ -50,13 +106,12 @@ Message parse_message(char* msg) {
 	if (!found) {
 		message.type = "unknown";
 		message.content = msg;
+		return message;
 	}
 
-	printf("colon_index =  %d\n", colon_index);
 	
 	size_t type_len = colon_index * sizeof(char) + 1;
 	size_t content_len = strlen(msg) - type_len + 1; 
-
 
 	message.type = (char*)malloc(type_len);
 	message.content = (char*)malloc(content_len);
@@ -84,6 +139,23 @@ void write_callback(uv_write_t *req, int status) {
     free(req);
 }
 
+void get_other_users(uv_stream_t* client, UserList* other_users) {
+	
+	other_users->count = 0;
+	other_users->users = malloc(sizeof(User) * 10);
+
+	// char** other_usernames = malloc(sizeof(char*) * 10);
+	// int other_usernames_count = 0;
+
+	for (int i = 0; i < active_users.count; i++) {
+		User user = active_users.users[i];
+		if (user.stream != client) {
+			other_users->users[other_users->count] = user;
+			other_users->count++;
+		}
+	}
+}
+
 void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
     if (nread < 0) {
         if (nread != UV_EOF) {
@@ -91,40 +163,42 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
             uv_close((uv_handle_t*) client, NULL);
         }
     } else if (nread > 0) {
-	
-	printf("raw message = %s\n", buf->base);
+	// trim the message to /r
+	// trim_message(buf->base);
 
-	trim_message(buf->base);
 
-	printf("trimmed = %s\n", buf->base);
+	printf("received = %s\n", buf->base);
 
-	Message message = parse_message(buf->base);
 
-	printf("message.type = %s\n", message.type);
-	printf("message.content = %s\n", message.content);
+	RawMessageList msg_list = parse_messages(buf->base);
+		
+	for (int i = 0; i < msg_list.count; i++) {
+		Message msg = parse_message(msg_list.messages[i]);
+		printf("msg %d = {\n %s \n %s\n}\n", i, msg.type, msg.content);
 
-	// if (strcmp(msg_type, "username") == 0) {
-	// 	printf("got username\n");
+		if (strcmp(msg.content, "players?") == 0) {
+			UserList other_users;
+			get_other_users(client, &other_users);
+			printf("other users: %s\n", other_users.users->username);
+		}
+	}
+	fflush(stdout);
+
+	// // parse the message
+	// Message message = parse_message(buf->base);
+	//
+	// // if message is a username add to active_users
+	// if (strcmp(message.type, "username") == 0) {
+	// 	// create a new user
+	// 	User user = {
+	// 		message.content,
+	// 		client,
+	// 	};
+	//
+	// 	// add the user to active_users
+	// 	active_users.users[active_users.count] = user;
 	// }
-
-	// switch (msg_type) {
-	// 	case "username":
-	// 		printf("got username\n");
-	// 		break;
-	// }
-
-	// printf("message type =  %s\n", msg_type);
-	
-
-	// print the message
-	// printf("nread = %zd\n", nread);
-	// printf("message: %s\n", buf->base);
-	
-
-
-	// if (
-
-
+	//
 	// allocate the write request to write back
 	uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
 
@@ -172,7 +246,12 @@ void on_new_connection(uv_stream_t *server, int status) {
 
 // Callbacks (on_new_connection, on_read, on_write, on_alloc, etc.) 
 // must be defined to handle specific events.
-int main() {
+int main(void) {
+
+    active_users.users = malloc(sizeof(User) * 10);
+    active_users.count = 0;
+
+
     // create default libuv loop
     loop = uv_default_loop();
 

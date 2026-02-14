@@ -6,6 +6,9 @@
 uv_connect_t *req;
 SDL_Event net_read_evt;
 
+
+
+
 /* PRIVATE */
 void alloc_buffer(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf) {
     buf->base = malloc(suggested_size);
@@ -22,7 +25,7 @@ void on_write_end(uv_write_t *write_req, int status) {
 }
 
 
-char* parse_message(char* msg) {
+char* trim_message(char* msg) {
 	
 	for (int i = 0; i < (int)strlen(msg); i++) {
 		if (msg[i] == '\r') {
@@ -42,7 +45,7 @@ void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
     } else if (nread > 0) {
 	// print the message
 	printf("nread = %zd\n", nread);
-	printf("message: %s\n", parse_message(buf->base));
+	printf("message: %s\n", trim_message(buf->base));
     	SDL_PushEvent(&net_read_evt);
 
     } else {
@@ -84,8 +87,6 @@ void on_connect(uv_connect_t *new_req, int status) {
 	
     req = new_req;
     uv_read_start(req->handle, alloc_buffer, read_data);
-
-    net_write("players?\r\n");
 }
 
 
