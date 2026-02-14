@@ -2,6 +2,7 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_log.h>
+#include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
@@ -67,6 +68,15 @@ int init_rects(App* app) {
 	return 0;
 }
 
+void init_gameplay_header(App* app) {
+	SDL_FRect* gp_header = &(app->gameplay_header);
+	gp_header->x = 20;
+	gp_header->y = 20;
+	gp_header->w = 100;
+	gp_header->h = 20;
+
+}
+
 
 void view_init(App* app) {
 	SDL_InitSubSystem(0);
@@ -74,6 +84,7 @@ void view_init(App* app) {
 	init_rects(app);
 	circle_init(app);
 	dashboard_init(app);
+	init_gameplay_header(app);
 }
 
 void draw_window_borders(App* app) {
@@ -92,20 +103,35 @@ void render_angle_indicator(App* app) {
 	SDL_RenderLine(app->renderer, originx, originy, tailx, taily);
 }
 
+void render_gameplay_header(App* app) {
+	text_render(app, app->username, &(app->gameplay_header));
+}
 
+
+void render_gameplay(App* app) {
+	SDL_Renderer* renderer = app->renderer;
+	SDL_RenderFillRect(renderer, &(app->rect_left));
+	SDL_RenderFillRect(renderer, &(app->rect_right));
+	render_gameplay_header(app);
+	circle_render(app);
+}
 
 void view_render(App *app) {
 	SDL_Renderer* renderer = app->renderer;
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderClear(renderer);
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-	SDL_RenderFillRect(renderer, &(app->rect_left));
-	SDL_RenderFillRect(renderer, &(app->rect_right));
 	draw_window_borders(app);
-	circle_render(app);
+
+	if (app->game_phase != typing && app->game_phase != initializing) {
+		render_gameplay(app);
+	}	
 	
-	if (!app->game_started) {
+	if (app->game_phase == pointing) {
 		render_angle_indicator(app);
+	}
+
+	if (app->game_phase == typing) {
 		dashboard_render(app);
 	}
 

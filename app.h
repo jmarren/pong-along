@@ -13,17 +13,29 @@ typedef struct {
 } Circle;
 
 
+typedef enum {
+	initializing,
+	typing,
+	playing,
+	pointing,
+} game_phase;
+
+
 typedef struct {
 	SDL_Renderer* renderer;
 	SDL_FRect rect_left;
 	SDL_FRect rect_right;
-	const SDL_Rect* dashboard_textbox;
-	SDL_FRect dashboard_textbox_container;
+	SDL_FRect dashboard_textbox;
+	SDL_FRect dashboard_title;
+	SDL_FRect gameplay_header;
 	Circle circle;
+	char* username;
 	SDL_Window* window;
-	bool game_started;
+	game_phase game_phase;
+	// bool game_started;
 	TTF_Font * font;
 	char* text_input;
+	SDL_FRect text_input_rect;
 } App;
 
 #endif

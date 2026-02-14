@@ -3,7 +3,7 @@
 #define TEXT_H
 #include "../app.h"
 
-void text_render(App* app, char* message);
+void text_render(App* app, char* message, SDL_FRect* rect);
 
 
 #endif

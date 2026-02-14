@@ -14,7 +14,7 @@
 // extern unsigned int tiny_ttf_len;
 static SDL_Texture *texture = NULL;
 
-void text_render(App* app, char* message) {
+void text_render(App* app, char* message, SDL_FRect* rect) {
 	SDL_Color color = { 244,  200, 255, SDL_ALPHA_OPAQUE };
 	SDL_Surface *text;
 
@@ -28,12 +28,9 @@ void text_render(App* app, char* message) {
 	    SDL_Log("Couldn't create text: %s\n", SDL_GetError());
 	}
 
-	SDL_FRect dst;
 	
-    	SDL_GetTextureSize(texture, &dst.w, &dst.h);
-	dst.x = 500;
-	dst.y = 500;
-
-	SDL_RenderTexture(app->renderer, texture, NULL, &dst);
+    	SDL_GetTextureSize(texture, &(rect->w), &(rect->h));
+	//
+	SDL_RenderTexture(app->renderer, texture, NULL, rect);
 
 }

@@ -2,6 +2,7 @@
 
 
 #include <SDL3/SDL_events.h>
+#include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_mouse.h>
@@ -24,7 +25,7 @@ Sint32 cursor;
 Sint32 selection_len;
 
 void handle_space(App* app) {
-	app->game_started = true;
+	app->game_phase = playing;
 	app->circle.obj.speed = 20;
 }
 
@@ -57,7 +58,7 @@ int handle_keydown(App* app, SDL_Event* event) {
 			}
 
 			
-			if (!app->game_started) {
+			if (app->game_phase == pointing) {
 				switch (key) {
 					case SDLK_N:
 						circle->obj.direction += M_PI * 0.05;
@@ -66,6 +67,25 @@ int handle_keydown(App* app, SDL_Event* event) {
 						circle->obj.direction -= M_PI * 0.05;
 						break;
 
+				}
+			}
+
+
+			if (app->game_phase == typing) {
+				switch (key) {
+					case SDLK_BACKSPACE:
+						size_t len;
+						len = strlen(app->text_input);
+						if (len > 0) {
+							app->text_input[len - 1] = '\0';
+						}
+
+						break;
+					case SDLK_RETURN:
+						SDL_StopTextInput(app->window);
+						strncpy(app->username, app->text_input, 100);
+						app->game_phase = pointing;
+						break;
 				}
 			}
 
@@ -91,36 +111,34 @@ int handle_events(App* app) {
 
 				case SDL_EVENT_TEXT_INPUT:
 				    printf("event text input\n");
-				    app->text_input = strncat(app->text_input, event.text.text, 1);
+				    printf("event.text.text = %s\n", event.text.text);
+
+				    if (strlen(app->text_input) < 99) {
+				    	app->text_input = strncat(app->text_input, event.text.text, 1);
+				    }
 				    break;
 				case SDL_EVENT_TEXT_EDITING:
 				    printf("event text editing\n");
-				    /*
-				    Update the composition text.
-				    Update the cursor position.
-				    Update the selection length (if any).
-				    */
-				    // composition = event.edit.text;
 				    cursor = event.edit.start;
 				    selection_len = event.edit.length;
 				    break;
-				 case SDL_EVENT_MOUSE_BUTTON_DOWN:
-				    	printf("event mouse button down\n");
-					float x, y;
-					SDL_GetMouseState(&x, &y);
-
-					if (x > app->dashboard_textbox_container.x &&
-					    x < app->dashboard_textbox_container.x + app->dashboard_textbox_container.w &&
-					    y > app->dashboard_textbox_container.y && 
-					    y < app->dashboard_textbox_container.y + app->dashboard_textbox_container.h) {
-
-						printf("textbox clicked\n");
-					}
-
-					SDL_StartTextInput(app->window);
-
-				break;
-
+				//  case SDL_EVENT_MOUSE_BUTTON_DOWN:
+				//     	printf("event mouse button down\n");
+				// 	float x, y;
+				// 	SDL_GetMouseState(&x, &y);
+				//
+				// 	if (x > app->dashboard_textbox_container.x &&
+				// 	    x < app->dashboard_textbox_container.x + app->dashboard_textbox_container.w &&
+				// 	    y > app->dashboard_textbox_container.y && 
+				// 	    y < app->dashboard_textbox_container.y + app->dashboard_textbox_container.h) {
+				//
+				// 		printf("textbox clicked\n");
+				// 	}
+				//
+				// 	SDL_StartTextInput(app->window);
+				//
+				// break;
+				//
 
 
 
@@ -188,7 +206,7 @@ void loop_start(App* app) {
 		   // handle events and quit if QUIT is returned
 		   if (handle_events(app) == QUIT) break;
 			
-		   if (app->game_started) {
+		   if (app->game_phase == playing) {
 			   handle_collisions(app);
 			   circle_move(app);
 		   } else {

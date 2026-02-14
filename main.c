@@ -22,9 +22,10 @@ App app;
 
 int main(int argc, char *argv[])
 {
-	app.game_started = false;
+	app.game_phase = initializing;
 
 	app.text_input = (char*)calloc(100, sizeof(char));
+	app.username = (char*)calloc(100, sizeof(char));
 	
 	strncpy(app.text_input, "", 2);
 
@@ -32,11 +33,7 @@ int main(int argc, char *argv[])
 
 	net_init();
 
-	// view_hello_world();
-
-
 	pthread_t thread_id;
-	// pthread_mutex_t mutex;
 
 	// TODO:  Use specialized lib threads instead
   	int result = pthread_create(&thread_id, NULL, (void*)&net_start, NULL);
@@ -48,6 +45,9 @@ int main(int argc, char *argv[])
 
 	printf("net_read_evt->type = %d\n", net_read_evt.type);
 
+	app.game_phase = typing; 
+
+	SDL_StartTextInput(app.window);
 
 	loop_start(&app);
 	return 0;
