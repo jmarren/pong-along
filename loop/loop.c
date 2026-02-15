@@ -91,6 +91,21 @@ int handle_keydown(App* app, SDL_Event* event) {
 					break;
 			}
 
+			if (app->game_phase == choosing_opponent) {
+				switch(key) {
+					case SDLK_UP:
+						if (app->selected_opponent > 0) {
+							app->selected_opponent--;
+						}
+						break;
+					case SDLK_DOWN:
+						if (app->selected_opponent < app->active_users.len - 1) {
+							app->selected_opponent++;
+						}
+						break;
+				}
+			}
+
 			
 			if (app->game_phase == pointing) {
 				switch (key) {

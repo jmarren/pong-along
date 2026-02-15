@@ -74,7 +74,6 @@ void init_gameplay_header(App* app) {
 	gp_header->y = 20;
 	gp_header->w = 100;
 	gp_header->h = 20;
-
 }
 
 
@@ -109,6 +108,7 @@ void render_gameplay_header(App* app) {
 
 void init_player_list(App* app) {
 
+	app->selected_opponent = 0;
 	app->player_list = calloc(app->active_users.len, sizeof(SDL_FRect));
 	
 	int y = 140;
@@ -137,6 +137,15 @@ void render_active_users(App* app) {
 	text_render(app, "choose your opponent", &header);
 	for (int i = 0; i < app->active_users.len; i++) {
 		text_render(app, app->active_users.base[i], &(app->player_list[i]));
+		if (i == app->selected_opponent) {
+			SDL_FRect container;
+			container = *(&(app->player_list[i]));
+			container.h = app->player_list[i].h * 2;
+			container.y -= (container.h / 4);
+			container.w = app->player_list[i].w + 20;
+			container.x -= 10;
+			SDL_RenderRect(app->renderer, &container);
+		}
 	}
 }
 

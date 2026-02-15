@@ -74,7 +74,7 @@ typedef struct {
 	char* text_input;
 	SDL_FRect text_input_rect;
 	CharpList active_users;
-	// char* active_users;
+	int selected_opponent;
 } App;
 
 #endif

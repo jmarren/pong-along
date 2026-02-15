@@ -93,8 +93,10 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
 			strncpy(res, "players: ", strlen("players: "));
 			
 			for (int i = 0; i < active_users.count; i++) {
-				strcat(res, active_users.users[i].username);
-				strcat(res, ",");
+				if (active_users.users[i].stream != client) {
+					strcat(res, active_users.users[i].username);
+					strcat(res, ",");
+				}
 			}
 			
 			// append delimiter

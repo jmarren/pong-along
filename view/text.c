@@ -30,7 +30,6 @@ void text_render(App* app, char* message, SDL_FRect* rect) {
 
 	
     	SDL_GetTextureSize(texture, &(rect->w), &(rect->h));
-	//
 	SDL_RenderTexture(app->renderer, texture, NULL, rect);
 
 }
