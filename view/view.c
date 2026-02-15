@@ -7,7 +7,7 @@
 #include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
 #include <math.h>
-#include <stdio.h>
+#include <stdlib.h>
 #include "circle.h"
 #include "dashboard.h"
 #include "../vendored/SDL_ttf/include/SDL3_ttf/SDL_ttf.h"
@@ -107,6 +107,39 @@ void render_gameplay_header(App* app) {
 	text_render(app, app->username, &(app->gameplay_header));
 }
 
+void init_player_list(App* app) {
+
+	app->player_list = calloc(app->active_users.len, sizeof(SDL_FRect));
+	
+	int y = 140;
+
+	for (int i = 0; i < app->active_users.len; i++) {
+		SDL_FRect player_list;
+		
+		player_list.x = 100;
+		player_list.y = y;
+		player_list.w = 100;
+		player_list.h = 100;
+		y += 40;
+
+		app->player_list[i] = player_list;
+	}
+}
+
+void render_active_users(App* app) {
+	SDL_FRect header;
+
+	header.x = 100;
+	header.y = 100;
+	header.w = 100;
+	header.h = 100;
+
+	text_render(app, "choose your opponent", &header);
+	for (int i = 0; i < app->active_users.len; i++) {
+		text_render(app, app->active_users.base[i], &(app->player_list[i]));
+	}
+}
+
 
 void render_gameplay(App* app) {
 	SDL_Renderer* renderer = app->renderer;
@@ -123,7 +156,7 @@ void view_render(App *app) {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	draw_window_borders(app);
 
-	if (app->game_phase != typing && app->game_phase != initializing) {
+	if (app->game_phase == playing || app->game_phase == pointing) {
 		render_gameplay(app);
 	}	
 	
@@ -133,6 +166,10 @@ void view_render(App *app) {
 
 	if (app->game_phase == typing) {
 		dashboard_render(app);
+	}
+
+	if (app->game_phase == choosing_opponent) {
+		render_active_users(app);
 	}
 
 	// text_render(app, "hi");

@@ -3,10 +3,18 @@
 #include <stdlib.h>
 
 
-void print_messages(raw_msg_list* msg_list) {
-	printf("messages: \n");
+void print_raw_messages(raw_msg_list* msg_list) {
+	printf("raw messages: \n");
 	for (int i = 0; i < msg_list->count; i++) {
 		printf("%s\n", msg_list->messages[i]);
+	}
+	fflush(stdout);
+}
+
+void print_messages(message_list* msg_list) {
+	printf("messages: \n");
+	for (int i = 0; i < msg_list->len; i++) {
+		printf("type = %s\ncontent = %s\n", msg_list->base[i].type, msg_list->base[i].content);
 	}
 	fflush(stdout);
 }
@@ -110,7 +118,17 @@ message parse_message(char* msg) {
 }
 
 message_list parse_raw_message_list(raw_msg_list* list) {
-	
+	message_list msg_list;
+	msg_list.len = 0;
 
+	for (int i = 0; i < list->count; i++) {
+		message msg;
+		msg = parse_message(list->messages[i]);
+		msg_list.base[i] = msg;
+		msg_list.len++;
+	}
+	
+	
+	return msg_list;
 }
 

@@ -49,7 +49,7 @@ void handle_return(App* app) {
 	strncpy(app->username, app->text_input, 100);
 
 	// set game phase to pointing
-	app->game_phase = pointing;
+	app->game_phase = choosing_opponent;
 
 	// calculate length of request message
 	size_t req_msg_len = strlen("username: \r\n") + strlen(app->username) + 1;
@@ -63,10 +63,10 @@ void handle_return(App* app) {
 	// append the username to the end of req_msg
 	strcat(req_msg, app->username);
 	strcat(req_msg, "\r\n");
-	printf("req_msg = %s\n", req_msg);
 
 	// write the req_msg to the connection
 	net_write(req_msg);
+	// query player list
 	net_write("players?\r\n");
 
 }
@@ -135,13 +135,62 @@ int handle_keydown(App* app, SDL_Event* event) {
 }
 
 
+void print_active_users(App* app) {
+	
+	printf("active_users: \n");
+	for (int i = 0; i < app->active_users.len; i++) {
+		printf("- %s\n", app->active_users.base[i]);
+	}
+
+}
+
+void handle_message(App* app, message* msg) {
+		
+	if (strcmp(msg->type, "players") == 0) {
+		printf("got players = %s\n", msg->content);
+
+		const char s = ','; // Delimiters: space and comma
+		char *token;
+
+		// Get the first token
+		// The first call to strtok() uses the original string
+		token = strtok(msg->content, &s);
+
+		int i = 0;
+		// Walk through other tokens
+		while (token != NULL) {
+			printf("Token: %s\n", token);
+			printf("strlen(token) = %zu\n", strlen(token));
+			strlen(token) > 0 ? app->active_users.base[i] = token : NULL;
+			app->active_users.len = i + 1;
+			i++;
+
+			token = strtok(NULL, &s);
+
+			// Subsequent calls to strtok() use NULL as the first argument
+		}
+
+		print_active_users(app);
+		init_player_list(app);
+	}
+}
+
+
 
 void handle_read_event(App* app, SDL_UserEvent* evt) {
 	char* data1 = (char*)evt->data1;
 		
-	raw_msg_list msg_list;
-	msg_list = parse_messages(data1);
-	print_messages(&msg_list);
+	raw_msg_list raw_msgs;
+	raw_msgs = parse_messages(data1);
+	print_raw_messages(&raw_msgs);
+	message_list msgs = parse_raw_message_list(&raw_msgs);
+	print_messages(&msgs);
+			
+	for (int i = 0; i < msgs.len; i++) {
+		handle_message(app, &(msgs.base[i]));
+	}
+
+
 
 }
 

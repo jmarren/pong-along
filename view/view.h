@@ -16,6 +16,6 @@ void view_handle_up(void);
 void view_handle_down(void);
 void view_hello_world(void);
 void view_render(App* app);
-
+void init_player_list(App* app);
 #endif
 

@@ -94,7 +94,7 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
 			
 			for (int i = 0; i < active_users.count; i++) {
 				strcat(res, active_users.users[i].username);
-				strcat(res, ", ");
+				strcat(res, ",");
 			}
 			
 			// append delimiter

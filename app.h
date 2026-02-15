@@ -19,6 +19,7 @@ typedef enum {
 	typing,
 	playing,
 	pointing,
+	choosing_opponent,
 } game_phase;
 
 typedef struct {
@@ -62,6 +63,7 @@ typedef struct {
 	SDL_FRect dashboard_textbox;
 	SDL_FRect dashboard_title;
 	SDL_FRect gameplay_header;
+	SDL_FRect* player_list;
 	Uint32 read_event_type;
 	Circle circle;
 	char* username;
@@ -71,7 +73,7 @@ typedef struct {
 	TTF_Font * font;
 	char* text_input;
 	SDL_FRect text_input_rect;
-	CharpList active_users_client;
+	CharpList active_users;
 	// char* active_users;
 } App;
 

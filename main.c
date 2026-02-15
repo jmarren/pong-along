@@ -26,8 +26,9 @@ int main(int argc, char *argv[])
 	app.game_phase = initializing;
 	
 		
-	app.active_users_client.capacity = ACTIVE_USERS_CAP;
-	app.active_users_client.base = (char**)calloc(ACTIVE_USERS_CAP, sizeof(char*));
+	app.active_users.capacity = ACTIVE_USERS_CAP;
+	app.active_users.base = (char**)calloc(ACTIVE_USERS_CAP, sizeof(char*));
+	app.active_users.len = 0;
 	
 	app.text_input = (char*)calloc(100, sizeof(char));
 	app.username = (char*)calloc(100, sizeof(char));
