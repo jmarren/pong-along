@@ -80,6 +80,26 @@ void handle_backspace(App* app) {
 }
 
 
+void select_opponent(App* app) {
+	char* write_req;
+	
+	char* opponent_username = app->active_users.base[app->selected_opponent];
+
+	size_t len;
+	len = strlen("selected-opponent: \r\n") + strlen(opponent_username);
+
+	write_req = calloc(len + 1, sizeof(char));
+
+	strncpy(write_req, "selected-opponent: ", strlen("selected-opponent: "));
+	strncat(write_req, opponent_username, strlen(opponent_username));
+	strncat(write_req, "\r\n", 3);
+	printf("write_req = %s\n", write_req);
+
+	net_write(write_req);
+	
+}
+
+
 int handle_keydown(App* app, SDL_Event* event) {
 
 			SDL_Keycode key = event->key.key;
@@ -103,6 +123,10 @@ int handle_keydown(App* app, SDL_Event* event) {
 							app->selected_opponent++;
 						}
 						break;
+					case SDLK_RETURN:
+						select_opponent(app);
+						break;
+
 				}
 			}
 
@@ -162,8 +186,6 @@ void print_active_users(App* app) {
 void handle_message(App* app, message* msg) {
 		
 	if (strcmp(msg->type, "players") == 0) {
-		printf("got players = %s\n", msg->content);
-
 		const char s = ','; // Delimiters: space and comma
 		char *token;
 
@@ -187,6 +209,11 @@ void handle_message(App* app, message* msg) {
 
 		print_active_users(app);
 		init_player_list(app);
+	}
+
+
+	if (strcmp(msg->type, "match") == 0) {
+		printf("match made!\nopponent = %s\n", msg->content);
 	}
 }
 

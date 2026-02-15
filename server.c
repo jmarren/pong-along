@@ -59,22 +59,14 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
             uv_close((uv_handle_t*) client, NULL);
         }
     } else if (nread > 0) {
-	// trim the message to /r
-	// trim_message(buf->base);
-
 
 	printf("received = %s\n", buf->base);
 	raw_msg_list msg_list = parse_messages(buf->base);
 	
-	printf("parsed\n");
-		
 	for (int i = 0; i < msg_list.count; i++) {
-		printf("i: %d\n", i);
 		message msg = parse_message(msg_list.messages[i]);
-		printf("msg %d = {\n %s \n %s\n}\n", i, msg.type, msg.content);
 
 		if (strcmp(msg.type, "username") == 0) {
-			printf("got new user request\n");
 			// create a new user
 			user user = {
 				msg.content,
@@ -84,6 +76,25 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
 			// add the user to active_users
 			active_users.users[active_users.count] = user;
 			active_users.count++;
+		}
+
+		if (strcmp(msg.type, "selected-opponent") == 0) {
+			printf("selected opponent = %s\n", msg.content);
+			char* res = calloc(strlen(msg.content) + strlen("match: \r\n") + 1, sizeof(char));
+			strncpy(res, "match: ", strlen("match: "));
+			strncat(res, msg.content, strlen(msg.content));
+			strncat(res, "\r\n", strlen("\r\n") + 1);
+			// initialize the write buffer with the size of the message that was read (to echo back)
+			uv_buf_t wrbuf = uv_buf_init(res, strlen(res) + 1);
+				
+			
+			// allocate the write request to write back
+			uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
+
+			// write the message back to the client
+			// with buf len of 1 and a write callback that 
+			// frees the write request
+			uv_write(req, client, &wrbuf, 1, write_callback);
 		}
 
 		if (strcmp(msg.content, "players?") == 0) {
@@ -101,9 +112,6 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
 			
 			// append delimiter
 			strcat(res, "\r\n");
-		
-			printf("res: %s\n", res);
-
 
 			// initialize the write buffer with the size of the message that was read (to echo back)
 			uv_buf_t wrbuf = uv_buf_init(res, 100);
