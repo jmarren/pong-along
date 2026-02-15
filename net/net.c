@@ -1,16 +1,13 @@
 
 #include "uv.h"
 #include <SDL3/SDL_events.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "../app.h"
 
 uv_connect_t *req;
-// SDL_Event net_read_evt;
-
 Uint32 read_event_type;
-
-
 
 
 /* PRIVATE */
@@ -47,13 +44,16 @@ void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
             uv_close((uv_handle_t*)stream, NULL);
         }
     } else if (nread > 0) {
-	// print the message
-	printf("nread = %zd\n", nread);
-	printf("message: %s\n", trim_message(buf->base));
+	// initialize a user event
 	SDL_UserEvent event;
+	
+	// set event type 
 	event.type = read_event_type;
-
-	printf("pushing read event\n");
+	
+	// set data1 to the buffer base pointer
+	event.data1 = (void*)buf->base;
+	
+	// push event
     	SDL_PushEvent((SDL_Event*)&event);
 
     } else {
@@ -77,8 +77,8 @@ void net_write(char *message) {
 
 /* PUBLIC */
 void net_init(App* app) {
+	// set the read event type in global var
 	read_event_type = app->read_event_type;
-	printf("read_event_type = %d\n", read_event_type);
 }
 
 

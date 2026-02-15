@@ -17,6 +17,7 @@
 #define MESSAGE "Hello Libuv\n"
 #define HOST "127.0.0.1"
 #define PORT 7000
+#define ACTIVE_USERS_CAP 50
 
 App app;
 
@@ -24,9 +25,13 @@ int main(int argc, char *argv[])
 {
 	app.game_phase = initializing;
 	
-
+		
+	app.active_users_client.capacity = ACTIVE_USERS_CAP;
+	app.active_users_client.base = (char**)calloc(ACTIVE_USERS_CAP, sizeof(char*));
+	
 	app.text_input = (char*)calloc(100, sizeof(char));
 	app.username = (char*)calloc(100, sizeof(char));
+	// app.active_users = 
 	
 	// strncpy(app.text_input, "", 0);
 

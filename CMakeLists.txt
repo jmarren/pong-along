@@ -3,7 +3,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(main)
 project(server)
-project(client)
 
 # set the output directory for built objects.
 # This makes sure that the dynamic library goes into the build directory automatically.
@@ -30,6 +29,8 @@ add_executable(main WIN32
 	view/text.h
 	net/net.c
 	net/net.h
+	net/parse.h
+	net/parse.c
 	loop/loop.c
 	loop/loop.h
 	view/circle.c
@@ -38,14 +39,17 @@ add_executable(main WIN32
 	view/physics.h
 	vendored/SDL_ttf/include/SDL3_ttf/SDL_ttf.h
 )
-add_executable(server WIN32 server.c)
-add_executable(client WIN32 client.c)
+add_executable(server WIN32
+	server.c
+	app.h
+	net/parse.h
+	net/parse.c
+)
 
 # Link to the actual SDL3 library.
 target_link_libraries(main PRIVATE SDL3_ttf::SDL3_ttf SDL3::SDL3)
 target_link_libraries(main PRIVATE uv_a)
 target_link_libraries(server PRIVATE uv_a)
-target_link_libraries(client PRIVATE uv_a)
 # target_link_libraries(hello PRIVATE SDL3_ttf::SDL3_ttf SDL3::SDL3)
 # target_include_direc
 

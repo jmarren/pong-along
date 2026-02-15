@@ -5,6 +5,8 @@
 #include <string.h>
 #include <uv.h>
 #include <stdio.h>
+#include "app.h"
+#include "net/parse.h"
 
 #define PORT 7000
 #define BACKLOG 1000
@@ -12,128 +14,9 @@
 uv_tcp_t server;
 uv_loop_t * loop;
 
-typedef struct {
-	char* username;
-	uv_stream_t* stream;
-} User;
 
-typedef struct {
-	char* type;
-	char* content;
-} Message;
+users_list active_users;
 
-typedef struct {
-	User* users;
-	int count;
-} UserList;
-
-UserList active_users;
-
-typedef struct {
-	char** messages;
-	int count;
-} RawMessageList;
-
-
-RawMessageList parse_messages(char* raw) {
-	RawMessageList msgs;
-	msgs.count = 0;
-	msgs.messages = calloc(50, sizeof(char*));
-	
-	
-	int indices_size = 10;
-	
-	int* parse_indices = calloc(indices_size, sizeof(int));
-	int num_indices = 0;
-
-	// get indices of /r/n delimiter
-	for (int i = 0; i < (int)strlen(raw) - 1; i++) {
-		if (raw[i] == '\r' && raw[i+1] == '\n') {
-			parse_indices[num_indices] = i;
-			num_indices++;
-			
-			// reallocate if necessary
-			if (num_indices > indices_size) { 
-				indices_size *= 2;
-				parse_indices = realloc(parse_indices, indices_size);
-			}
-		} 
-	}
-	
-	int start_index = 0;
-
-	
-	// copy contents into msgs
-	for (int i = 0; i < num_indices; i++) {
-		fflush(stdout);
-		// calculate message length
-		int len = parse_indices[i] - start_index;
-	
-		// allocate space for the message in the message list
-		msgs.messages[msgs.count] = calloc(sizeof(char), len);
-	
-		// copy (len) bytes from the start index into the last message in the list
-		strncpy(msgs.messages[msgs.count], &raw[start_index], len);
-
-		// increment message count
-		msgs.count++;
-		
-		// set the start index to the start of the next message (exlude \r\n)
-		start_index = parse_indices[i] + 2;
-	}
-
-	fflush(stdout);
-
-
-	return msgs;
-}
-
-
-
-
-void trim_message(char* msg) {
-	for (int i = 0; i < (int)strlen(msg); i++) {
-		if (msg[i] == '\r') {
-			msg[i] = '\0';
-		}
-	}
-}
-
-Message parse_message(char* msg) {
-	Message message;
-	
-	int colon_index = 0;
-	bool found = false;
-
-
-	printf("parsing %s\n", msg);
- 
-	for (int i = 0; i < (int)strlen(msg); i++) {
-		if (msg[i] == ':') {
-			colon_index = i;
-			found = true;
-			break;
-		} 
-	}
-
-	if (!found) {
-		message.type = "unknown";
-		message.content = msg;
-		return message;
-	}
-
-	
-	size_t type_len = colon_index * sizeof(char) + 1;
-	size_t content_len = strlen(msg) - type_len + 1; 
-
-	message.type = (char*)calloc(sizeof(char), type_len);
-	message.content = (char*)calloc(sizeof(char), content_len);
-
-	strncpy(message.type, msg, colon_index);
-	strncpy(message.content, &msg[colon_index + 2], content_len - 1);
-	
-	return message;
-}
 
 
 
@@ -152,16 +35,16 @@ void write_callback(uv_write_t *req, int status) {
     free(req);
 }
 
-void get_other_users(uv_stream_t* client, UserList* other_users) {
+void get_other_users(uv_stream_t* client, users_list* other_users) {
 	
 	other_users->count = 0;
-	other_users->users = malloc(sizeof(User) * 10);
+	other_users->users = malloc(sizeof(user) * 10);
 
 	// char** other_usernames = malloc(sizeof(char*) * 10);
 	// int other_usernames_count = 0;
 
 	for (int i = 0; i < active_users.count; i++) {
-		User user = active_users.users[i];
+		user user = active_users.users[i];
 		if (user.stream != client) {
 			other_users->users[other_users->count] = user;
 			other_users->count++;
@@ -181,21 +64,19 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
 
 
 	printf("received = %s\n", buf->base);
-
-
-	RawMessageList msg_list = parse_messages(buf->base);
+	raw_msg_list msg_list = parse_messages(buf->base);
 	
 	printf("parsed\n");
 		
 	for (int i = 0; i < msg_list.count; i++) {
 		printf("i: %d\n", i);
-		Message msg = parse_message(msg_list.messages[i]);
+		message msg = parse_message(msg_list.messages[i]);
 		printf("msg %d = {\n %s \n %s\n}\n", i, msg.type, msg.content);
 
 		if (strcmp(msg.type, "username") == 0) {
 			printf("got new user request\n");
 			// create a new user
-			User user = {
+			user user = {
 				msg.content,
 				client,
 			};
@@ -291,7 +172,7 @@ void on_new_connection(uv_stream_t *server, int status) {
 // must be defined to handle specific events.
 int main(void) {
 
-    active_users.users = malloc(sizeof(User) * 10);
+    active_users.users = malloc(sizeof(user) * 10);
     active_users.count = 0;
 
 

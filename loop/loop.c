@@ -10,12 +10,14 @@
 #include <SDL3/SDL_timer.h>
 #include <math.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../view/view.h"
 #include "../view/circle.h"
 #include "../net/net.h"
+#include "../net/parse.h"
 
 #define QUIT 1
 #define CONTINUE 0
@@ -38,6 +40,46 @@ void handle_down(App* app) {
 	app->rect_left.y += 36;
 }
 
+
+void handle_return(App* app) {
+	// stop taking input
+	SDL_StopTextInput(app->window);
+
+	// copy text_input to username
+	strncpy(app->username, app->text_input, 100);
+
+	// set game phase to pointing
+	app->game_phase = pointing;
+
+	// calculate length of request message
+	size_t req_msg_len = strlen("username: \r\n") + strlen(app->username) + 1;
+
+	// calloc tcp request message
+	char* req_msg = calloc(req_msg_len, sizeof(char));
+
+	//  copy "username: " to req_message
+	strncpy(req_msg, "username: ", strlen("username: "));
+
+	// append the username to the end of req_msg
+	strcat(req_msg, app->username);
+	strcat(req_msg, "\r\n");
+	printf("req_msg = %s\n", req_msg);
+
+	// write the req_msg to the connection
+	net_write(req_msg);
+	net_write("players?\r\n");
+
+}
+
+void handle_backspace(App* app) {
+	size_t len;
+	len = strlen(app->text_input);
+	if (len > 0) {
+		app->text_input[len - 1] = '\0';
+	}
+}
+
+
 int handle_keydown(App* app, SDL_Event* event) {
 
 			SDL_Keycode key = event->key.key;
@@ -46,15 +88,6 @@ int handle_keydown(App* app, SDL_Event* event) {
 			switch (key) {
 				case SDLK_ESCAPE :
 					return QUIT;
-					break;
-				case SDLK_SPACE:
-					handle_space(app);
-					break;
-				case SDLK_UP:
-					handle_up(app);
-					break;
-				case SDLK_DOWN:
-					handle_down(app);
 					break;
 			}
 
@@ -67,6 +100,9 @@ int handle_keydown(App* app, SDL_Event* event) {
 					case SDLK_P:
 						circle->obj.direction -= M_PI * 0.05;
 						break;
+					case SDLK_SPACE:
+						handle_space(app);
+						break;
 
 				}
 			}
@@ -75,47 +111,38 @@ int handle_keydown(App* app, SDL_Event* event) {
 			if (app->game_phase == typing) {
 				switch (key) {
 					case SDLK_BACKSPACE:
-						size_t len;
-						len = strlen(app->text_input);
-						if (len > 0) {
-							app->text_input[len - 1] = '\0';
-						}
-
+						handle_backspace(app);
 						break;
 					case SDLK_RETURN:
+						handle_return(app);
+						break;
+				}
 
-						// stop taking input
-						SDL_StopTextInput(app->window);
+			}
 
-						// copy text_input to username
-						strncpy(app->username, app->text_input, 100);
-
-						// set game phase to pointing
-						app->game_phase = pointing;
-
-						// calculate length of request message
-						size_t req_msg_len = strlen("username: \r\n") + strlen(app->username) + 1;
-
-						// calloc tcp request message
-						char* req_msg = calloc(req_msg_len, sizeof(char));
-	
-						//  copy "username: " to req_message
-						strncpy(req_msg, "username: ", strlen("username: "));
-				
-						// append the username to the end of req_msg
-						strcat(req_msg, app->username);
-						strcat(req_msg, "\r\n");
-						printf("req_msg = %s\n", req_msg);
-
-						// write the req_msg to the connection
-						net_write(req_msg);
-						// net_write("players?\r\n");
-
+			if (app->game_phase == playing) {
+				switch (key) {
+					case SDLK_UP:
+						handle_up(app);
+						break;
+					case SDLK_DOWN:
+						handle_down(app);
 						break;
 				}
 			}
 
 			return CONTINUE;
+}
+
+
+
+void handle_read_event(App* app, SDL_UserEvent* evt) {
+	char* data1 = (char*)evt->data1;
+		
+	raw_msg_list msg_list;
+	msg_list = parse_messages(data1);
+	print_messages(&msg_list);
+
 }
 
 
@@ -141,6 +168,14 @@ int handle_events(App* app) {
 				    }
 				    break;
 			 }
+
+			if (event.type == app->read_event_type) {
+				SDL_UserEvent* evt = (SDL_UserEvent*)&event;
+				handle_read_event(app, evt);
+				// void* data1 = evt->data1;
+				// void* data2 = evt->data2;
+				// printf("evt->data1 = %s\n", (char*)data1);
+			}
 		 }
 
 		return CONTINUE;
