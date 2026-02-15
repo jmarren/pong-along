@@ -23,6 +23,7 @@ App app;
 int main(int argc, char *argv[])
 {
 	app.game_phase = initializing;
+	
 
 	app.text_input = (char*)calloc(100, sizeof(char));
 	app.username = (char*)calloc(100, sizeof(char));
@@ -30,8 +31,9 @@ int main(int argc, char *argv[])
 	// strncpy(app.text_input, "", 0);
 
 	view_init(&app);
+	app.read_event_type = SDL_RegisterEvents(1);
 
-	net_init();
+	net_init(&app);
 
 	pthread_t thread_id;
 
@@ -43,7 +45,6 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	printf("net_read_evt->type = %d\n", net_read_evt.type);
 
 	app.game_phase = typing; 
 

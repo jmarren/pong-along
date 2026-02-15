@@ -109,7 +109,7 @@ int handle_keydown(App* app, SDL_Event* event) {
 
 						// write the req_msg to the connection
 						net_write(req_msg);
-						net_write("players?\r\n");
+						// net_write("players?\r\n");
 
 						break;
 				}

@@ -28,6 +28,7 @@ typedef struct {
 	SDL_FRect dashboard_textbox;
 	SDL_FRect dashboard_title;
 	SDL_FRect gameplay_header;
+	Uint32 read_event_type;
 	Circle circle;
 	char* username;
 	SDL_Window* window;

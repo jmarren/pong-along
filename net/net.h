@@ -2,13 +2,14 @@
 #define NET_H
 
 #include <SDL3/SDL_events.h>
+#include "../app.h"
 
 // the event that is fired when data is read from the connection
 extern SDL_Event net_read_evt;
 
 // initializes the net lib 
 //  -> register read event with SDL
-void net_init(void);
+void net_init(App* app);
 
 // writes a message to the tcp connection
 void net_write(char *message);

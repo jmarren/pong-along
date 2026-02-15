@@ -22,9 +22,6 @@ typedef struct {
 	char* content;
 } Message;
 
-
-User* users_online;
-
 typedef struct {
 	User* users;
 	int count;
@@ -44,7 +41,9 @@ RawMessageList parse_messages(char* raw) {
 	msgs.messages = calloc(50, sizeof(char*));
 	
 	
-	int* parse_indices = calloc(10, sizeof(int));
+	int indices_size = 10;
+	
+	int* parse_indices = calloc(indices_size, sizeof(int));
 	int num_indices = 0;
 
 	// get indices of /r/n delimiter
@@ -52,34 +51,44 @@ RawMessageList parse_messages(char* raw) {
 		if (raw[i] == '\r' && raw[i+1] == '\n') {
 			parse_indices[num_indices] = i;
 			num_indices++;
+			
+			// reallocate if necessary
+			if (num_indices > indices_size) { 
+				indices_size *= 2;
+				parse_indices = realloc(parse_indices, indices_size);
+			}
 		} 
 	}
 	
 	int start_index = 0;
+
 	
 	// copy contents into msgs
 	for (int i = 0; i < num_indices; i++) {
-		msgs.messages[msgs.count] = calloc(sizeof(char), parse_indices[i] - start_index);
-		strncpy(msgs.messages[msgs.count], &raw[start_index], parse_indices[i] - start_index);
-		printf("msgs.messages[msgs.count] = %s\n", msgs.messages[msgs.count]);
+		fflush(stdout);
+		// calculate message length
+		int len = parse_indices[i] - start_index;
+	
+		// allocate space for the message in the message list
+		msgs.messages[msgs.count] = calloc(sizeof(char), len);
+	
+		// copy (len) bytes from the start index into the last message in the list
+		strncpy(msgs.messages[msgs.count], &raw[start_index], len);
 
-		start_index = parse_indices[i] + 2;
+		// increment message count
 		msgs.count++;
+		
+		// set the start index to the start of the next message (exlude \r\n)
+		start_index = parse_indices[i] + 2;
 	}
+
+	fflush(stdout);
 
 
 	return msgs;
 }
 
-			// // allocate space for message in list
-			// msgs.messages[msgs.count] = malloc(strlen(curr_msg) + 1);
-			//
-			// // copy the current message to the 
-			// strncpy(msgs.messages[msgs.count], &raw[i], strlen(curr_msg));
-			// printf("found msg: %s\n", curr_msg);
-			// i+=2;
-			// curr_msg = "\0";
-			// msgs.count++;
+
 
 
 void trim_message(char* msg) {
@@ -175,8 +184,11 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
 
 
 	RawMessageList msg_list = parse_messages(buf->base);
+	
+	printf("parsed\n");
 		
 	for (int i = 0; i < msg_list.count; i++) {
+		printf("i: %d\n", i);
 		Message msg = parse_message(msg_list.messages[i]);
 		printf("msg %d = {\n %s \n %s\n}\n", i, msg.type, msg.content);
 
@@ -194,14 +206,6 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
 		}
 
 		if (strcmp(msg.content, "players?") == 0) {
-			printf("players query\n");
-			// UserList other_users;
-			// get_other_users(client, &other_users);
-			// printf("other users: %s\n", other_users.users->username);
-				
-			// printf("other_users.count: %d\n", other_users.count);
-			
-			printf("active_users.count: %d\n", active_users.count);
 
 			char* res = calloc(100, sizeof(char));
 

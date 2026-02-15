@@ -1,10 +1,14 @@
 
 #include "uv.h"
 #include <SDL3/SDL_events.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include "../app.h"
 
 uv_connect_t *req;
-SDL_Event net_read_evt;
+// SDL_Event net_read_evt;
+
+Uint32 read_event_type;
 
 
 
@@ -46,7 +50,11 @@ void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
 	// print the message
 	printf("nread = %zd\n", nread);
 	printf("message: %s\n", trim_message(buf->base));
-    	SDL_PushEvent(&net_read_evt);
+	SDL_UserEvent event;
+	event.type = read_event_type;
+
+	printf("pushing read event\n");
+    	SDL_PushEvent((SDL_Event*)&event);
 
     } else {
 	printf("read 0\n");
@@ -68,9 +76,9 @@ void net_write(char *message) {
 }
 
 /* PUBLIC */
-void net_init(void) {
-	net_read_evt.type = SDL_RegisterEvents(1);
-	printf("net_read_event->type = %d\n", net_read_evt.type);
+void net_init(App* app) {
+	read_event_type = app->read_event_type;
+	printf("read_event_type = %d\n", read_event_type);
 }
 
 
