@@ -181,8 +181,6 @@ void view_render(App *app) {
 		render_active_users(app);
 	}
 
-	// text_render(app, "hi");
-
 	SDL_RenderPresent(renderer);
 }
 

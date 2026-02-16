@@ -1,6 +1,3 @@
-
-
-
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_keycode.h>
@@ -39,7 +36,6 @@ void handle_up(App* app) {
 void handle_down(App* app) {
 	app->rect_left.y += 36;
 }
-
 
 void handle_return(App* app) {
 	// stop taking input
@@ -102,75 +98,75 @@ void select_opponent(App* app) {
 
 int handle_keydown(App* app, SDL_Event* event) {
 
-			SDL_Keycode key = event->key.key;
-			Circle* circle = &(app->circle);
+	SDL_Keycode key = event->key.key;
+	Circle* circle = &(app->circle);
 
-			switch (key) {
-				case SDLK_ESCAPE :
-					return QUIT;
-					break;
-			}
+	switch (key) {
+		case SDLK_ESCAPE :
+			return QUIT;
+			break;
+	}
 
-			if (app->game_phase == choosing_opponent) {
-				switch(key) {
-					case SDLK_UP:
-						if (app->selected_opponent > 0) {
-							app->selected_opponent--;
-						}
-						break;
-					case SDLK_DOWN:
-						if (app->selected_opponent < app->active_users.len - 1) {
-							app->selected_opponent++;
-						}
-						break;
-					case SDLK_RETURN:
-						select_opponent(app);
-						break;
-
+	if (app->game_phase == choosing_opponent) {
+		switch(key) {
+			case SDLK_UP:
+				if (app->selected_opponent > 0) {
+					app->selected_opponent--;
 				}
-			}
-
-			
-			if (app->game_phase == pointing) {
-				switch (key) {
-					case SDLK_N:
-						circle->obj.direction += M_PI * 0.05;
-						break;
-					case SDLK_P:
-						circle->obj.direction -= M_PI * 0.05;
-						break;
-					case SDLK_SPACE:
-						handle_space(app);
-						break;
-
+				break;
+			case SDLK_DOWN:
+				if (app->selected_opponent < app->active_users.len - 1) {
+					app->selected_opponent++;
 				}
-			}
+				break;
+			case SDLK_RETURN:
+				select_opponent(app);
+				break;
+
+		}
+	}
+
+	
+	if (app->game_phase == pointing) {
+		switch (key) {
+			case SDLK_N:
+				circle->obj.direction += M_PI * 0.05;
+				break;
+			case SDLK_P:
+				circle->obj.direction -= M_PI * 0.05;
+				break;
+			case SDLK_SPACE:
+				handle_space(app);
+				break;
+
+		}
+	}
 
 
-			if (app->game_phase == typing) {
-				switch (key) {
-					case SDLK_BACKSPACE:
-						handle_backspace(app);
-						break;
-					case SDLK_RETURN:
-						handle_return(app);
-						break;
-				}
+	if (app->game_phase == typing) {
+		switch (key) {
+			case SDLK_BACKSPACE:
+				handle_backspace(app);
+				break;
+			case SDLK_RETURN:
+				handle_return(app);
+				break;
+		}
 
-			}
+	}
 
-			if (app->game_phase == playing) {
-				switch (key) {
-					case SDLK_UP:
-						handle_up(app);
-						break;
-					case SDLK_DOWN:
-						handle_down(app);
-						break;
-				}
-			}
+	if (app->game_phase == playing) {
+		switch (key) {
+			case SDLK_UP:
+				handle_up(app);
+				break;
+			case SDLK_DOWN:
+				handle_down(app);
+				break;
+		}
+	}
 
-			return CONTINUE;
+	return CONTINUE;
 }
 
 
@@ -196,15 +192,11 @@ void handle_message(App* app, message* msg) {
 		int i = 0;
 		// Walk through other tokens
 		while (token != NULL) {
-			printf("Token: %s\n", token);
-			printf("strlen(token) = %zu\n", strlen(token));
 			strlen(token) > 0 ? app->active_users.base[i] = token : NULL;
 			app->active_users.len = i + 1;
 			i++;
 
 			token = strtok(NULL, &s);
-
-			// Subsequent calls to strtok() use NULL as the first argument
 		}
 
 		print_active_users(app);
@@ -213,7 +205,7 @@ void handle_message(App* app, message* msg) {
 
 
 	if (strcmp(msg->type, "match") == 0) {
-		printf("match made!\nopponent = %s\n", msg->content);
+		app->game_phase = pointing;
 	}
 }
 
@@ -231,45 +223,39 @@ void handle_read_event(App* app, SDL_UserEvent* evt) {
 	for (int i = 0; i < msgs.len; i++) {
 		handle_message(app, &(msgs.base[i]));
 	}
-
-
-
 }
 
 
 
 int handle_events(App* app) {
-	
-	 	SDL_Event event;
 
-		 while (SDL_PollEvent(&event)) {  
-			 switch (event.type) {
-				 case SDL_EVENT_QUIT:
+	SDL_Event event;
+
+	 while (SDL_PollEvent(&event)) {  
+		 switch (event.type) {
+			 case SDL_EVENT_QUIT:
+				return QUIT;
+				break;
+			 case SDL_EVENT_KEY_DOWN:
+				if (handle_keydown(app, &event) == QUIT) {
 					return QUIT;
-					break;
-				 case SDL_EVENT_KEY_DOWN:
-					if (handle_keydown(app, &event) == QUIT) {
-						return QUIT;
-					}
-					break;
+				}
+				break;
 
-				case SDL_EVENT_TEXT_INPUT:
-				    if (strlen(app->text_input) < 99) {
-				    	app->text_input = strncat(app->text_input, event.text.text, 1);
-				    }
-				    break;
-			 }
-
-			if (event.type == app->read_event_type) {
-				SDL_UserEvent* evt = (SDL_UserEvent*)&event;
-				handle_read_event(app, evt);
-				// void* data1 = evt->data1;
-				// void* data2 = evt->data2;
-				// printf("evt->data1 = %s\n", (char*)data1);
-			}
+			case SDL_EVENT_TEXT_INPUT:
+			    if (strlen(app->text_input) < 99) {
+				app->text_input = strncat(app->text_input, event.text.text, 1);
+			    }
+			    break;
 		 }
 
-		return CONTINUE;
+		if (event.type == app->read_event_type) {
+			SDL_UserEvent* evt = (SDL_UserEvent*)&event;
+			handle_read_event(app, evt);
+		}
+	 }
+
+	return CONTINUE;
 }
 
 
@@ -313,6 +299,8 @@ void loop_start(App* app) {
 	
 	int ticks = SDL_GetTicks();
 
+	write_udp("hi");
+
 
 	while (true) {
 		
@@ -341,11 +329,3 @@ void loop_start(App* app) {
 }
 
 
-			// if (key == SDLK_W) {
-			// 	net_write("hi\r\n");			
-			// }
-			// if (key == SDLK_K) {
-			// 	char* msg = "bye\r\n";
-			// 	printf("msg = %s\n", msg);
-			// 	net_write(msg);			
-			// }

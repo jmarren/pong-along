@@ -15,6 +15,7 @@ void net_write(char *message);
 void net_start(void* args);
 
 
+void write_udp(char* message);
 // char* parse_message(char* msg);
 // void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf);
 // void on_connect(uv_connect_t *new_req, int status);

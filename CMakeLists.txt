@@ -38,7 +38,12 @@ add_executable(main WIN32
 	view/physics.c
 	view/physics.h
 	vendored/SDL_ttf/include/SDL3_ttf/SDL_ttf.h
+	vendored/cc/array.c
+	vendored/cc/array.h
+	vendored/cc/cc_common.h
+	vendored/cc/cc_common.c
 )
+
 add_executable(server WIN32
 	server.c
 	app.h
