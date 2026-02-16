@@ -6,16 +6,16 @@
 
 // initializes the net lib 
 //  -> register read event with SDL
-void net_init(App* app);
+// void net_init(App* app);
 
 // writes a message to the tcp connection
-void net_write(char *message);
+// void net_write(char *message);
 
 // starts the uv loop
-void net_start(void* args);
+void net_start(App* app);
 
 
-void write_udp(char* message);
+// void write_udp(char* message);
 // char* parse_message(char* msg);
 // void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf);
 // void on_connect(uv_connect_t *new_req, int status);

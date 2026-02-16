@@ -84,10 +84,13 @@ void handle_username(uv_stream_t* client, message* msg) {
 
 void handle_players_query(uv_stream_t* client, message* msg) { 
 
+	// allocate the response message
 	char* res = calloc(100, sizeof(char));
 
+	// copy the type to res
 	strncpy(res, "players: ", strlen("players: "));
 	
+	// cat each username onto the res with a comma
 	for (int i = 0; i < active_users.count; i++) {
 		if (active_users.users[i].stream != client) {
 			strcat(res, active_users.users[i].username);
@@ -120,8 +123,6 @@ void handle_tcp_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
         }
     } else if (nread > 0) {
 
-	printf("received = %s\n", buf->base);
-	fflush(stdout);
 	raw_msg_list msg_list = parse_messages(buf->base);
 	
 	for (int i = 0; i < msg_list.count; i++) {
@@ -196,7 +197,7 @@ void on_udp_recv(uv_udp_t* req, ssize_t nread, const uv_buf_t* buf, const struct
 	   }
 }
 
-void init_udp(void) {
+void server_init_udp(void) {
 
     int err = uv_udp_init(loop, &udp_server);
     if (err) {
@@ -222,7 +223,7 @@ void init_udp(void) {
 }
 
 
-void init_tcp(void) {
+void server_init_tcp(void) {
     int err;
     // initialize tcp server with loop and pointer to server
     err = uv_tcp_init(loop, &tcp_server);
@@ -262,8 +263,8 @@ int main(void) {
     // create default libuv loop
     loop = uv_default_loop();
 
-    init_tcp();
-    init_udp();
+     server_init_tcp();
+    server_init_udp();
 
     // run the loop with default flag
     uv_run(loop, UV_RUN_DEFAULT); // 8. Run the Event Loop

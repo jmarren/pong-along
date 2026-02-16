@@ -29,6 +29,12 @@ add_executable(main WIN32
 	view/text.h
 	net/net.c
 	net/net.h
+	net/tcp.c
+	net/tcp.h
+	net/udp.c
+	net/udp.h
+	net/shared.c
+	net/shared.h
 	net/parse.h
 	net/parse.c
 	loop/loop.c

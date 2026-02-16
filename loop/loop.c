@@ -13,7 +13,9 @@
 #include <string.h>
 #include "../view/view.h"
 #include "../view/circle.h"
-#include "../net/net.h"
+// #include "../net/net.h"
+#include "../net/tcp.h"
+#include "../net/udp.h"
 #include "../net/parse.h"
 
 #define QUIT 1
@@ -219,7 +221,6 @@ void handle_read_event(App* app, SDL_UserEvent* evt) {
 	raw_msgs = parse_messages(data1);
 	print_raw_messages(&raw_msgs);
 	message_list msgs = parse_raw_message_list(&raw_msgs);
-	print_messages(&msgs);
 			
 	for (int i = 0; i < msgs.len; i++) {
 		handle_message(app, &(msgs.base[i]));
@@ -278,13 +279,11 @@ void handle_collisions(App *app) {
 		    circley - circle->radius <= rect_right_y + app->rect_right.h &&
 		    circley + circle->radius >= rect_right_y
 		) {
-			printf("hit rect_right\n");
 			circle_bounce_wall_left_right(app);
 		} else if (circlex - circle->radius <= rect_left_x && 
 		    circley - circle->radius <= rect_left_y + app->rect_left.h &&
 		    circley + circle->radius >= rect_left_y
 		) {
-			printf("hit rect_right\n");
 			circle_bounce_wall_left_right(app);
 		}
 

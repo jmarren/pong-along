@@ -1,6 +1,4 @@
 #include "app.h"
-#include "vendored/cc/array.h"
-#include "vendored/cc/cc_common.h"
 #include "view/view.h"
 #include "net/net.h"
 #include "loop/loop.h"
@@ -32,19 +30,18 @@ int main(int argc, char *argv[])
 	app.active_users.capacity = ACTIVE_USERS_CAP;
 	app.active_users.base = (char**)calloc(ACTIVE_USERS_CAP, sizeof(char*));
 	app.active_users.len = 0;
-	
 	app.text_input = (char*)calloc(100, sizeof(char));
 	app.username = (char*)calloc(100, sizeof(char));
 
-	view_init(&app);
 	app.read_event_type = SDL_RegisterEvents(1);
 
-	net_init(&app);
+	view_init(&app);
+
 
 	pthread_t thread_id;
 
 	// TODO:  Use specialized lib threads instead
-  	int result = pthread_create(&thread_id, NULL, (void*)&net_start, NULL);
+  	int result = pthread_create(&thread_id, NULL, (void*)&net_start, &app);
 
         if (result != 0) {
 		perror("Failed to create thread");

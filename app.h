@@ -46,6 +46,9 @@ typedef struct {
 } users_list;
 
 
+
+
+
 typedef struct {
 	char** messages;
 	int count;
@@ -57,6 +60,7 @@ typedef struct {
 } message_list;
 
 typedef struct {
+	uv_loop_t* loop;
 	SDL_Renderer* renderer;
 	SDL_FRect rect_left;
 	SDL_FRect rect_right;
@@ -69,7 +73,6 @@ typedef struct {
 	char* username;
 	SDL_Window* window;
 	game_phase game_phase;
-	// bool game_started;
 	TTF_Font * font;
 	char* text_input;
 	SDL_FRect text_input_rect;
