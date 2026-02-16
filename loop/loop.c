@@ -159,9 +159,11 @@ int handle_keydown(App* app, SDL_Event* event) {
 		switch (key) {
 			case SDLK_UP:
 				handle_up(app);
+				write_udp("up");
 				break;
 			case SDLK_DOWN:
 				handle_down(app);
+				write_udp("down");
 				break;
 		}
 	}

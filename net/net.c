@@ -107,8 +107,6 @@ void write_udp(char* message) {
 void net_init(App* app) {
 	// set the read event type in global var
 	read_event_type = app->read_event_type;
-	
-
 }
 
 
@@ -142,11 +140,12 @@ void net_start(void* args) {
     // allocate the socket
     uv_tcp_t* tcp_sock = (uv_tcp_t*)malloc(sizeof(uv_tcp_t));
 	
-    // initialize tcp
+    // initialize tcp handle
     err = uv_tcp_init(loop, tcp_sock);
     if (err) {
         fprintf(stderr, "TCP init error: %s\n", uv_strerror(err));
     }
+    // initialize udp handle
     err = uv_udp_init(loop, udp_sock);
     if (err) {
         fprintf(stderr, "UDP init error: %s\n", uv_strerror(err));
@@ -160,18 +159,11 @@ void net_start(void* args) {
     struct sockaddr_in tcp_dest;
     uv_ip4_addr("0.0.0.0", 7000, &tcp_dest);
 
+    // initialize udp_dest so we can send to it later
     uv_ip4_addr("0.0.0.0", 11000, &udp_dest);
 
-    // err = uv_udp_bind(udp_sock, (const struct sockaddr*)&udp_dest, UV_UDP_REUSEADDR);
-    // if (err) {
-    //     fprintf(stderr, "UDP bind error: %s\n", uv_strerror(err));
-    // }
-    // err = uv_udp_connect(udp_sock, (const struct sockaddr*)&udp_dest);
-    // if (err) {
-    //     fprintf(stderr, "UDP connect error: %s\n", uv_strerror(err));
-    // }
-
     // call connect using the on_connect callback
+    // no need to connect udp
     uv_tcp_connect(connect, tcp_sock, (const struct sockaddr*)&tcp_dest, on_connect);
 
     // run the loop
