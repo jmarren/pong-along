@@ -9,7 +9,7 @@
 #include "net/parse.h"
 
 #define TCP_PORT 7000
-#define UDP_PORT 11000
+#define UDP_PORT 8888
 #define BACKLOG 1000
 
 uv_tcp_t tcp_server;
@@ -26,12 +26,13 @@ users_list active_users;
 
 
 void alloc_buffer(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf) {
-    buf->base = calloc(suggested_size, sizeof(char));
+    buf->base = calloc(1, suggested_size);
     buf->len = suggested_size;
 }
 
 void write_callback(uv_write_t *req, int status) {
     if (status) {
+	printf("write error\n");
         fprintf(stderr, "Write error %s\n", uv_strerror(status));
     }
 	
@@ -52,6 +53,69 @@ void get_other_users(uv_stream_t* client, users_list* other_users) {
 	}
 }
 
+
+void handle_selected_opponent(uv_stream_t* client, message* msg) {
+	printf("selected opponent = %s\n", msg->content);
+	char* res = calloc(strlen(msg->content) + strlen("match: \r\n") + 1, sizeof(char));
+	strncpy(res, "match: ", strlen("match: "));
+	strncat(res, msg->content, strlen(msg->content));
+	strncat(res, "\r\n", strlen("\r\n") + 1);
+	// initialize the write buffer with the size of the message that was read (to echo back)
+	uv_buf_t wrbuf = uv_buf_init(res, strlen(res) + 1);
+		
+	
+	// allocate the write request to write back
+	uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
+
+	// write the message back to the client
+	// with buf len of 1 and a write callback that 
+	// frees the write request
+	uv_write(req, client, &wrbuf, 1, write_callback);
+}
+
+
+void handle_username(uv_stream_t* client, message* msg) {
+	// create a new user
+	user user = {
+		msg->content,
+		client,
+	};
+
+	// add the user to active_users
+	active_users.users[active_users.count] = user;
+	active_users.count++;
+}
+
+void handle_players_query(uv_stream_t* client, message* msg) { 
+
+	char* res = calloc(100, sizeof(char));
+
+	strncpy(res, "players: ", strlen("players: "));
+	
+	for (int i = 0; i < active_users.count; i++) {
+		if (active_users.users[i].stream != client) {
+			strcat(res, active_users.users[i].username);
+			strcat(res, ",");
+		}
+	}
+	
+	// append delimiter
+	strcat(res, "\r\n");
+
+	// initialize the write buffer with the size of the message that was read (to echo back)
+	uv_buf_t wrbuf = uv_buf_init(res, 100);
+		
+	
+	// allocate the write request to write back
+	uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
+
+	// write the message back to the client
+	// with buf len of 1 and a write callback that 
+	// frees the write request
+	uv_write(req, client, &wrbuf, 1, write_callback);
+}
+
+
 void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
     if (nread < 0) {
         if (nread != UV_EOF) {
@@ -68,63 +132,15 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
 		message msg = parse_message(msg_list.messages[i]);
 
 		if (strcmp(msg.type, "username") == 0) {
-			// create a new user
-			user user = {
-				msg.content,
-				client,
-			};
-
-			// add the user to active_users
-			active_users.users[active_users.count] = user;
-			active_users.count++;
+			handle_username(client, &msg);
 		}
 
 		if (strcmp(msg.type, "selected-opponent") == 0) {
-			printf("selected opponent = %s\n", msg.content);
-			char* res = calloc(strlen(msg.content) + strlen("match: \r\n") + 1, sizeof(char));
-			strncpy(res, "match: ", strlen("match: "));
-			strncat(res, msg.content, strlen(msg.content));
-			strncat(res, "\r\n", strlen("\r\n") + 1);
-			// initialize the write buffer with the size of the message that was read (to echo back)
-			uv_buf_t wrbuf = uv_buf_init(res, strlen(res) + 1);
-				
-			
-			// allocate the write request to write back
-			uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
-
-			// write the message back to the client
-			// with buf len of 1 and a write callback that 
-			// frees the write request
-			uv_write(req, client, &wrbuf, 1, write_callback);
+			handle_selected_opponent(client, &msg);
 		}
 
 		if (strcmp(msg.content, "players?") == 0) {
-
-			char* res = calloc(100, sizeof(char));
-
-			strncpy(res, "players: ", strlen("players: "));
-			
-			for (int i = 0; i < active_users.count; i++) {
-				if (active_users.users[i].stream != client) {
-					strcat(res, active_users.users[i].username);
-					strcat(res, ",");
-				}
-			}
-			
-			// append delimiter
-			strcat(res, "\r\n");
-
-			// initialize the write buffer with the size of the message that was read (to echo back)
-			uv_buf_t wrbuf = uv_buf_init(res, 100);
-				
-			
-			// allocate the write request to write back
-			uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
-
-			// write the message back to the client
-			// with buf len of 1 and a write callback that 
-			// frees the write request
-			uv_write(req, client, &wrbuf, 1, write_callback);
+			handle_players_query(client, &msg);
 		}
 	}
 	fflush(stdout);
@@ -178,16 +194,55 @@ void on_new_tcp_connection(uv_stream_t *server, int status) {
 }
 
 
-static void on_udp_recv(uv_udp_t* handle, ssize_t nread, const uv_buf_t* rcvbuf, const struct sockaddr* addr, unsigned flags) {
-    if (nread > 0) {
-        printf("%lu\n",nread);
-        printf("UDP: %s\n",rcvbuf->base);
-    } else {
-	printf("received n <= 0 udp message\n");
-    }
-    fflush(stdout);
-    free(rcvbuf->base);
+void on_udp_recv(uv_udp_t* req, ssize_t nread, const uv_buf_t* buf, const struct sockaddr* addr, unsigned flags) {
+
+	   if (buf == NULL) return;
+	   if (nread == 0) return;
+
+	  if (nread < 0) {
+	   fprintf(stderr, "Read error %s\n", uv_err_name(nread));
+	   uv_close((uv_handle_t*) req, NULL); // NULL is the uv_close_cb callback
+	   free(buf->base);
+	   return;
+	  }
+
+	   if (flags == UV_UDP_PARTIAL) {
+	printf("GOT PARTIAL FLAG\n");
+	   }
+
+	   if (nread != 0) {
+	     printf("on_read: %s\n", buf->base);
+	     free(buf->base);
+	   }
 }
+	
+	//    if (nread < 0) {
+	//   	fprintf(stderr, "Read error %s\n", uv_err_name(nread));
+	//        uv_close((uv_handle_t*) req, NULL);
+	//        free(buf->base);
+	//        return;
+	//    }
+	//    if (nread == 0) {
+	// printf("read 0 from udp\n");
+	//        uv_close((uv_handle_t*) req, NULL);
+	// return;
+	//    }
+	//
+    // char sender[17] = { 0 };
+    // uv_ip4_name((const struct sockaddr_in*) addr, sender, 16);
+    // fprintf(stderr, "Recv from %s\n", sender);
+    //
+    // printf("nread = %lu\n",nread);
+    // printf("UDP: %s\n",buf->base);
+    //
+    // free(buf->base);
+    //
+    //
+    // int err = uv_udp_recv_stop(req);
+    //
+    // if (err) {
+    //     fprintf(stderr, "UDP init error: %s\n", uv_strerror(err));
+    // }
 
 
 
@@ -220,7 +275,7 @@ int main(void) {
     uv_ip4_addr("127.0.0.1", TCP_PORT, &tcp_addr);
 
     struct sockaddr_in udp_recv_addr;
-    uv_ip4_addr("127.0.0.1", UDP_PORT, &udp_recv_addr);
+    uv_ip4_addr("0.0.0.0", UDP_PORT, &udp_recv_addr);
 
     // bind the server to the socket address
     err = uv_tcp_bind(&tcp_server, (const struct sockaddr*)&tcp_addr, UV_TCP_REUSEPORT); 
@@ -229,8 +284,7 @@ int main(void) {
         return 1;
     }
 
-    // bind the udp server to the udp addr
-    err = uv_udp_bind(&udp_server, (const struct sockaddr*)&udp_recv_addr, UV_UDP_REUSEPORT); 
+    err = uv_udp_bind(&udp_server, (const struct sockaddr*)&udp_recv_addr, 0); 
     if (err) {
         fprintf(stderr, "UDP bind error: %s\n", uv_strerror(err));
         return 1;

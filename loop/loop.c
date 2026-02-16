@@ -173,7 +173,6 @@ int handle_keydown(App* app, SDL_Event* event) {
 
 
 void print_active_users(App* app) {
-	
 	printf("active_users: \n");
 	for (int i = 0; i < app->active_users.len; i++) {
 		printf("- %s\n", app->active_users.base[i]);
@@ -301,7 +300,13 @@ void loop_start(App* app) {
 	
 	int ticks = SDL_GetTicks();
 
-	write_udp("hi");
+	//
+	// write_udp("1");
+	// write_udp("2");
+	// write_udp("3");
+	// write_udp("4");
+
+	// write_udp("hi");
 
 
 	while (true) {
@@ -309,6 +314,7 @@ void loop_start(App* app) {
 		int new_ticks = SDL_GetTicks();
 
 		if (new_ticks - ticks > 10) {
+		    write_udp("1");
 		   // set ticks to new_ticks
 		   ticks = new_ticks;
 		
