@@ -13,7 +13,7 @@ void net_start(App* app) {
     app->loop = uv_default_loop();
 
     // initialize udp and tcp
-    init_udp(app);
+    udp_init(app);
     tcp_init(app);
 	
     // run the loop

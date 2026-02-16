@@ -63,9 +63,9 @@ void handle_return(App* app) {
 	strcat(req_msg, "\r\n");
 
 	// write the req_msg to the connection
-	net_write(req_msg);
+	tcp_write(req_msg);
 	// query player list
-	net_write("players?\r\n");
+	tcp_write("players?\r\n");
 
 }
 
@@ -93,7 +93,7 @@ void select_opponent(App* app) {
 	strncat(write_req, "\r\n", 3);
 	printf("write_req = %s\n", write_req);
 
-	net_write(write_req);
+	tcp_write(write_req);
 	
 }
 
@@ -161,11 +161,11 @@ int handle_keydown(App* app, SDL_Event* event) {
 		switch (key) {
 			case SDLK_UP:
 				handle_up(app);
-				write_udp("up");
+				udp_write("up");
 				break;
 			case SDLK_DOWN:
 				handle_down(app);
-				write_udp("down");
+				udp_write("down");
 				break;
 		}
 	}

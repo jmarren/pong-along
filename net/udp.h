@@ -5,6 +5,6 @@
 
 #include "../app.h"
 
-void init_udp(App* app);
-void write_udp(char* message);
+void udp_init(App* app);
+void udp_write(char* message);
 #endif

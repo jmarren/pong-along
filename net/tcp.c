@@ -5,28 +5,50 @@
 #include "../app.h"
 #include "shared.h"
 
+/* ----------------- PRIVATE ------------------ */
+static uv_connect_t *req;
+static Uint32 read_event_type;
 
-uv_connect_t *req;
-Uint32 read_event_type;
 
-
+/**
+ * callback to fire after writing to tcp connection 
+ * frees write request struct
+ **/
 void on_write_end(uv_write_t *write_req, int status) {
+    // handle failed status
     if (status == -1) {
         fprintf(stderr, "error on_write_end");
         return;
     }
 
+    // free write request
     free(write_req);
 }
 
-
+/**
+ * callback to fire when data is read from the tcp connection 
+ * creates an SDL_UserEvent with registered read event type
+ * and pushes it to the SDL loop with message copied to event.data1
+ **/
 void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
+
+   // if < 0 bytes read, log and close the connection
    if (nread < 0) {
         if (nread != UV_EOF) {
             fprintf(stderr, "Read error %s\n", uv_err_name(nread));
             uv_close((uv_handle_t*)stream, NULL);
         }
-    } else if (nread > 0) {
+	return;
+   }
+
+   // if == 0 bytes read, log and return
+   if (nread == 0) {
+	   printf("nread = 0\n");
+	   return;
+   }
+
+   // if nread > 0 copy to SDL_UserEvent and push to SDL loop
+   if (nread > 0) {
 	// initialize a user event
 	SDL_UserEvent event;
 	
@@ -36,45 +58,60 @@ void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
 	// set data1 to the buffer base pointer
 	event.data1 = (void*)buf->base;
 	
-	// push event
+	// push event to SDL loop
     	SDL_PushEvent((SDL_Event*)&event);
-
-    } else {
-	printf("read 0\n");
     }
 }
 
 
-void net_write(char *message) {
+/* ----------------- PUBLIC ------------------ */
+/* write to the tcp connection  */
+void tcp_write(char *message) {
 
+    // initialize write buffer
     uv_buf_t buf;
 
-    buf.base = malloc(sizeof(char) * strlen(message));
+    // set length of buffer to message length
     buf.len = strlen(message);
-    buf.base = message;
-    uv_write_t* write_req = (uv_write_t*)malloc(sizeof(uv_write_t));
-    int buf_count = 1;
 
-    uv_write(write_req, req->handle, &buf, buf_count, on_write_end);
+    // assign base to message
+    buf.base = message;
+
+    // allocate write request
+    uv_write_t* write_req = (uv_write_t*)malloc(sizeof(uv_write_t));
+
+    // perform write 
+    uv_write(write_req, req->handle, &buf, 1, on_write_end);
 }
 
 
-
+/* handles a new tcp connection to the server */
 void on_connect(uv_connect_t *new_req, int status) {
+    // handle failed status
     if (status == -1) {
         fprintf(stderr, "error on_write_end");
         return;
     }
 	
+    // store a reference to the request locally
     req = new_req;
+
+    // start the read callback
     uv_read_start(req->handle, alloc_buffer, read_data);
 }
 
 
-
+/**
+ * initialize tcp for the client application
+ *
+ * store read event type locally
+ * init tcp handle
+ * connect to server destination address
+ **/
 void tcp_init(App* app) {
 
-   read_event_type = app->read_event_type;
+    // save a reference to the read event type locally
+    read_event_type = app->read_event_type;
 
 
     // allocate the socket

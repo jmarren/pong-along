@@ -3,11 +3,15 @@
 #include <string.h>
 #include "../app.h"
 
-uv_udp_t* udp_sock;
-struct sockaddr_in udp_dest;
-uv_loop_t* loop_ref;
+static uv_udp_t* udp_handle;
+static struct sockaddr_in udp_dest;
+static uv_loop_t* loop_ref;
 
-
+/* PRIVATE */
+/** 
+ * callback to fire after sending udp message
+ * frees request struct
+ **/
 void udp_send_cb(uv_udp_send_t* req, int status) { 
 	free(req);
 	
@@ -17,13 +21,16 @@ void udp_send_cb(uv_udp_send_t* req, int status) {
 }
 
 
-
-void init_udp(App* app) {
+/* PUBLIC  */
+/* initializes udp for client application */
+void udp_init(App* app) {
  
+    // store a reference to the client application uv loop locally 
+    // (for use in udp_write)
     loop_ref = app->loop;
 
-
-    udp_sock = (uv_udp_t*)malloc(sizeof(uv_udp_t));
+    // allocate memory for the udp handle
+    udp_handle = (uv_udp_t*)malloc(sizeof(uv_udp_t));
 
 
     // initialize udp_dest so we can send to it later
@@ -35,26 +42,27 @@ void init_udp(App* app) {
 }
 
 
-
-void write_udp(char* message) {
+/* writes to the udp socket */
+void udp_write(char* message) {
 
     // create a uv buffer w/ provided message
     uv_buf_t buf;
+
+    // save message to buffer
     buf.base = message;
-    buf.len = strlen(message) + 1;
-    int buf_count = 1;
+    buf.len = strlen(message);
 
     // initialize udp handle
-    int err = uv_udp_init(loop_ref, udp_sock);
+    int err = uv_udp_init(loop_ref, udp_handle);
     if (err) {
         fprintf(stderr, "UDP init error: %s\n", uv_strerror(err));
     }
 
-    // struct sockaddr_in udp_destination;
+    // initialize udp send request
     uv_udp_send_t req;
 
     // send the buf to the udp_sock w/ udp_dest
-    err = uv_udp_send(&req, udp_sock, &buf, buf_count, (const struct sockaddr*)&udp_dest, udp_send_cb);
+    err = uv_udp_send(&req, udp_handle, &buf, 1, (const struct sockaddr*)&udp_dest, udp_send_cb);
 
     if (err) {
         fprintf(stderr, "UDP init error: %s\n", uv_strerror(err));
