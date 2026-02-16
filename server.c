@@ -16,9 +16,6 @@ uv_tcp_t tcp_server;
 uv_udp_t udp_server;
 uv_loop_t* loop;
 
-uv_udp_t udp_send_socket;
-uv_udp_t udp_recv_socket;
-
 users_list active_users;
 
 
@@ -55,7 +52,6 @@ void get_other_users(uv_stream_t* client, users_list* other_users) {
 
 
 void handle_selected_opponent(uv_stream_t* client, message* msg) {
-	printf("selected opponent = %s\n", msg->content);
 	char* res = calloc(strlen(msg->content) + strlen("match: \r\n") + 1, sizeof(char));
 	strncpy(res, "match: ", strlen("match: "));
 	strncat(res, msg->content, strlen(msg->content));
@@ -116,7 +112,7 @@ void handle_players_query(uv_stream_t* client, message* msg) {
 }
 
 
-void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
+void handle_tcp_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
     if (nread < 0) {
         if (nread != UV_EOF) {
             fprintf(stderr, "Read error %s\n", uv_err_name(nread));
@@ -145,21 +141,6 @@ void handle_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
 	}
 	fflush(stdout);
 
-	// // parse the message
-	// Message message = parse_message(buf->base);
-	//
-	// // if message is a username add to active_users
-	//
-	// allocate the write request to write back
-	// uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
-	//
-	// // initialize the write buffer with the size of the message that was read (to echo back)
-	// uv_buf_t wrbuf = uv_buf_init(buf->base, nread);
-	//
-	// // write the message back to the client
-	// // with buf len of 1 and a write callback that 
-	// // frees the write request
-	//        uv_write(req, client, &wrbuf, 1, write_callback);
     } else {
 	printf("read 0\n");
     }
@@ -189,25 +170,24 @@ void on_new_tcp_connection(uv_stream_t *server, int status) {
 	// pass the client (casted to uv_stream_t)
 	// as well as a callback to allocate the buffer
 	// and a function the handle the request
-        uv_read_start((uv_stream_t*) client, alloc_buffer, handle_read);
+        uv_read_start((uv_stream_t*) client, alloc_buffer, handle_tcp_read);
     }
 }
 
 
 void on_udp_recv(uv_udp_t* req, ssize_t nread, const uv_buf_t* buf, const struct sockaddr* addr, unsigned flags) {
 
-	   if (buf == NULL) return;
-	   if (nread == 0) return;
+	   if (buf == NULL || nread == 0) return;
 
-	  if (nread < 0) {
-	   fprintf(stderr, "Read error %s\n", uv_err_name(nread));
-	   uv_close((uv_handle_t*) req, NULL); // NULL is the uv_close_cb callback
-	   free(buf->base);
-	   return;
-	  }
+	   if (nread < 0) {
+	     fprintf(stderr, "Read error %s\n", uv_err_name(nread));
+	     uv_close((uv_handle_t*) req, NULL); // NULL is the uv_close_cb callback
+	     free(buf->base);
+	     return;
+	   }
 
 	   if (flags == UV_UDP_PARTIAL) {
-	printf("GOT PARTIAL FLAG\n");
+		printf("GOT PARTIAL FLAG\n");
 	   }
 
 	   if (nread != 0) {
@@ -215,35 +195,61 @@ void on_udp_recv(uv_udp_t* req, ssize_t nread, const uv_buf_t* buf, const struct
 	     free(buf->base);
 	   }
 }
-	
-	//    if (nread < 0) {
-	//   	fprintf(stderr, "Read error %s\n", uv_err_name(nread));
-	//        uv_close((uv_handle_t*) req, NULL);
-	//        free(buf->base);
-	//        return;
-	//    }
-	//    if (nread == 0) {
-	// printf("read 0 from udp\n");
-	//        uv_close((uv_handle_t*) req, NULL);
-	// return;
-	//    }
-	//
-    // char sender[17] = { 0 };
-    // uv_ip4_name((const struct sockaddr_in*) addr, sender, 16);
-    // fprintf(stderr, "Recv from %s\n", sender);
-    //
-    // printf("nread = %lu\n",nread);
-    // printf("UDP: %s\n",buf->base);
-    //
-    // free(buf->base);
-    //
-    //
-    // int err = uv_udp_recv_stop(req);
-    //
-    // if (err) {
-    //     fprintf(stderr, "UDP init error: %s\n", uv_strerror(err));
-    // }
 
+void init_udp(void) {
+
+    int err = uv_udp_init(loop, &udp_server);
+    if (err) {
+        fprintf(stderr, "UDP init error: %s\n", uv_strerror(err));
+    }
+
+    struct sockaddr_in udp_recv_addr;
+    uv_ip4_addr("0.0.0.0", UDP_PORT, &udp_recv_addr);
+
+
+    err = uv_udp_bind(&udp_server, (const struct sockaddr*)&udp_recv_addr, 0); 
+    if (err) {
+        fprintf(stderr, "UDP bind error: %s\n", uv_strerror(err));
+    }
+
+
+    // initialize callback to receive data on udp socket
+    err = uv_udp_recv_start(&udp_server, alloc_buffer, on_udp_recv);
+    // handle listen error
+    if (err) {
+        fprintf(stderr, "UDP recv error: %s\n", uv_strerror(err));
+    }
+}
+
+
+void init_tcp(void) {
+    int err;
+    // initialize tcp server with loop and pointer to server
+    err = uv_tcp_init(loop, &tcp_server);
+    if (err) {
+        fprintf(stderr, "TCP init error: %s\n", uv_strerror(err));
+    }
+
+    // create the socket address and assign it host & port 
+    struct sockaddr_in tcp_addr;
+    uv_ip4_addr("127.0.0.1", TCP_PORT, &tcp_addr);
+
+
+    // bind the server to the socket address
+    err = uv_tcp_bind(&tcp_server, (const struct sockaddr*)&tcp_addr, UV_TCP_REUSEPORT); 
+    if (err) {
+        fprintf(stderr, "TCP bind error: %s\n", uv_strerror(err));
+    }
+
+
+    // listen on the address with the on_new_connection callback
+    err = uv_listen((uv_stream_t*) &tcp_server, BACKLOG, on_new_tcp_connection);
+
+    // handle listen error
+    if (err) {
+        fprintf(stderr, "TCP Listen error: %s\n", uv_strerror(err));
+    }
+}
 
 
 // Callbacks (on_new_connection, on_read, on_write, on_alloc, etc.) 
@@ -253,62 +259,11 @@ int main(void) {
     active_users.users = malloc(sizeof(user) * 10);
     active_users.count = 0;
 
-    int err;
-
     // create default libuv loop
     loop = uv_default_loop();
 
-    // initialize tcp server with loop and pointer to server
-    err = uv_tcp_init(loop, &tcp_server);
-    if (err) {
-        fprintf(stderr, "TCP init error: %s\n", uv_strerror(err));
-        return 1;
-    }
-    err = uv_udp_init(loop, &udp_server);
-    if (err) {
-        fprintf(stderr, "UDP init error: %s\n", uv_strerror(err));
-        return 1;
-    }
-
-    // create the socket address and assign it host & port 
-    struct sockaddr_in tcp_addr;
-    uv_ip4_addr("127.0.0.1", TCP_PORT, &tcp_addr);
-
-    struct sockaddr_in udp_recv_addr;
-    uv_ip4_addr("0.0.0.0", UDP_PORT, &udp_recv_addr);
-
-    // bind the server to the socket address
-    err = uv_tcp_bind(&tcp_server, (const struct sockaddr*)&tcp_addr, UV_TCP_REUSEPORT); 
-    if (err) {
-        fprintf(stderr, "TCP bind error: %s\n", uv_strerror(err));
-        return 1;
-    }
-
-    err = uv_udp_bind(&udp_server, (const struct sockaddr*)&udp_recv_addr, 0); 
-    if (err) {
-        fprintf(stderr, "UDP bind error: %s\n", uv_strerror(err));
-        return 1;
-    }
-
-    // initialize callback to receive data on udp socket
-    err = uv_udp_recv_start(&udp_server, alloc_buffer, on_udp_recv);
-
-    // handle listen error
-    if (err) {
-        fprintf(stderr, "UDP recv error: %s\n", uv_strerror(err));
-        return 1;
-    }
-	
-
-
-    // listen on the address with the on_new_connection callback
-    err = uv_listen((uv_stream_t*) &tcp_server, BACKLOG, on_new_tcp_connection);
-
-    // handle listen error
-    if (err) {
-        fprintf(stderr, "TCP Listen error: %s\n", uv_strerror(err));
-        return 1;
-    }
+    init_tcp();
+    init_udp();
 
     // run the loop with default flag
     uv_run(loop, UV_RUN_DEFAULT); // 8. Run the Event Loop

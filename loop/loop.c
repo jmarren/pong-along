@@ -314,7 +314,6 @@ void loop_start(App* app) {
 		int new_ticks = SDL_GetTicks();
 
 		if (new_ticks - ticks > 10) {
-		    write_udp("1");
 		   // set ticks to new_ticks
 		   ticks = new_ticks;
 		

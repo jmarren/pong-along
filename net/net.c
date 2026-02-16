@@ -91,28 +91,9 @@ void udp_send_cb(uv_udp_send_t* req, int status) {
 
 void write_udp(char* message) {
     uv_buf_t buf;
-
-    char* write_msg = calloc(strlen(message) + strlen("\r\n"), sizeof(char));
-
-    strncpy(write_msg, message, strlen(message));
-    strcat(write_msg, "\r\n");
-
-    printf("write_msg = %s\n", write_msg);
-
-    // message = realloc(strlen(message) + strlen("\r\n") + 1);
-    // printf("strcat \r\n");
-    // strcat(message, "\r\n");
-    // printf("message = %s\n", message);
-    // printf("mallocing");
-    // buf.base = malloc(strlen(message) + 1);
-	
-    buf.base = write_msg;
-    buf.len = strlen(write_msg) + 1;
-    // printf("assigning to base");
-    // buf.base = message;
-    // uv_write_t* write_req = (uv_write_t*)malloc(sizeof(uv_write_t));
+    buf.base = message;
+    buf.len = strlen(message) + 1;
     int buf_count = 1;
-
     int err;
 
     // initialize udp handle
@@ -142,10 +123,6 @@ void net_init(App* app) {
 
 
 
-
-
-
-
 void on_connect(uv_connect_t *new_req, int status) {
     if (status == -1) {
         fprintf(stderr, "error on_write_end");
@@ -157,29 +134,29 @@ void on_connect(uv_connect_t *new_req, int status) {
 }
 
 
-void net_start(void* args) {
-
-    int err;
-
-    // create default loop
-    loop = uv_default_loop();
+void init_udp(void) {
 
     udp_sock = (uv_udp_t*)malloc(sizeof(uv_udp_t));
-	
+
+
+    // initialize udp_dest so we can send to it later
+    int err = uv_ip4_addr("0.0.0.0", 8888, &udp_dest);
+
+    if (err) {
+        fprintf(stderr, "UDP bind error: %s\n", uv_strerror(err));
+    }
+}
+
+void init_tcp(void) {
+
     // allocate the socket
     uv_tcp_t* tcp_sock = (uv_tcp_t*)malloc(sizeof(uv_tcp_t));
 	
     // initialize tcp handle
-    err = uv_tcp_init(loop, tcp_sock);
+    int err = uv_tcp_init(loop, tcp_sock);
     if (err) {
         fprintf(stderr, "TCP init error: %s\n", uv_strerror(err));
     }
-    // // initialize udp handle
-    // err = uv_udp_init(loop, udp_sock);
-    // if (err) {
-    //     fprintf(stderr, "UDP init error: %s\n", uv_strerror(err));
-    // }
-
 
     // allocate the connection struct
     uv_connect_t* connect = (uv_connect_t*)malloc(sizeof(uv_connect_t));
@@ -188,29 +165,21 @@ void net_start(void* args) {
     struct sockaddr_in tcp_dest;
     uv_ip4_addr("0.0.0.0", 7000, &tcp_dest);
 
-    // initialize udp_dest so we can send to it later
-    err = uv_ip4_addr("0.0.0.0", 8888, &udp_dest);
-
-    if (err) {
-        fprintf(stderr, "UDP bind error: %s\n", uv_strerror(err));
-    }
-  // assert(uv_udp_init(loop, &server) == 0);
-  //   assert(uv_udp_bind(&server, (struct sockaddr*)&recv_addr, 0) == 0);
-  //   assert(uv_udp_recv_start(&server, on_alloc, on_recv) == 0);
-    // err = uv_udp_bind(udp_sock, (const struct sockaddr *)&udp_dest, 0);
-    //
-    // if (err) {
-    //     fprintf(stderr, "UDP bind error: %s\n", uv_strerror(err));
-    // }
-    // err = uv_udp_set_broadcast(udp_sock, 1);
-    // if (err) {
-    //     fprintf(stderr, "UDP set broadcast error: %s\n", uv_strerror(err));
-    // }
-
     // call connect using the on_connect callback
     // no need to connect udp
     uv_tcp_connect(connect, tcp_sock, (const struct sockaddr*)&tcp_dest, on_connect);
+}
 
+
+
+void net_start(void* args) {
+    // create default loop
+    loop = uv_default_loop();
+
+    // initialize udp and tcp
+    init_udp();
+    init_tcp();
+	
     // run the loop
     uv_run(loop, UV_RUN_DEFAULT); // 8. Run the Event Loop
 }
