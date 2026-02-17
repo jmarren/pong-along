@@ -1,7 +1,7 @@
 
 
 cmake_minimum_required(VERSION 3.16)
-project(main)
+project(client)
 project(server)
 
 # set the output directory for built objects.
@@ -18,31 +18,31 @@ add_subdirectory(vendored/SDL_ttf EXCLUDE_FROM_ALL)
 add_subdirectory(vendored/libuv EXCLUDE_FROM_ALL)
 
 # Create your game executable target as usual
-add_executable(main WIN32 
-	main.c 
-	app.h
-	view/view.c
-	view/view.h
-	view/dashboard.c
-	view/dashboard.h
-	view/text.c
-	view/text.h
-	net/net.c
-	net/net.h
-	net/tcp.c
-	net/tcp.h
-	net/udp.c
-	net/udp.h
-	net/shared.c
-	net/shared.h
+add_executable(client WIN32 
+	client/client.c 
+	client/client.h 
+	client/view/view.c
+	client/view/view.h
+	client/view/dashboard.c
+	client/view/dashboard.h
+	client/view/text.c
+	client/view/text.h
+	client/net/net.c
+	client/net/net.h
+	client/net/tcp.c
+	client/net/tcp.h
+	client/net/udp.c
+	client/net/udp.h
+	client/net/shared.c
+	client/net/shared.h
 	shared/parse.h
 	shared/parse.c
-	loop/loop.c
-	loop/loop.h
-	view/circle.c
-	view/circle.h
-	view/physics.c
-	view/physics.h
+	client/loop.c
+	client/loop.h
+	client/view/circle.c
+	client/view/circle.h
+	client/view/physics.c
+	client/view/physics.h
 	vendored/SDL_ttf/include/SDL3_ttf/SDL_ttf.h
 	vendored/cc/array.c
 	vendored/cc/array.h
@@ -66,8 +66,8 @@ add_executable(server WIN32
 )
 
 # Link to the actual SDL3 library.
-target_link_libraries(main PRIVATE SDL3_ttf::SDL3_ttf SDL3::SDL3)
-target_link_libraries(main PRIVATE uv_a)
+target_link_libraries(client PRIVATE SDL3_ttf::SDL3_ttf SDL3::SDL3)
+target_link_libraries(client PRIVATE uv_a)
 target_link_libraries(server PRIVATE uv_a)
 # target_link_libraries(hello PRIVATE SDL3_ttf::SDL3_ttf SDL3::SDL3)
 # target_include_direc

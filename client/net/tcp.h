@@ -2,8 +2,8 @@
 #define TCP_H
 
 #include <SDL3/SDL_stdinc.h>
-#include "../app.h"
-#include "../shared/parse.h"
+#include "../client.h"
+#include "../../shared/parse.h"
 
 // void tcp_write(char *message);
 void tcp_init(App* app);

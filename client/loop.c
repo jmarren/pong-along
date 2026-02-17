@@ -11,11 +11,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../view/view.h"
-#include "../view/circle.h"
+#include "view/view.h"
+#include "view/circle.h"
 // #include "../net/net.h"
-#include "../net/tcp.h"
-#include "../net/udp.h"
+#include "net/tcp.h"
+#include "net/udp.h"
 #include "../shared/parse.h"
 
 #define QUIT 1

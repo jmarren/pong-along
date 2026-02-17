@@ -1,7 +1,7 @@
 #include "uv.h"
 #include <stdlib.h>
 #include <string.h>
-#include "../app.h"
+#include "../client.h"
 
 static uv_udp_t* udp_handle;
 static struct sockaddr_in udp_dest;

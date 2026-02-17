@@ -2,9 +2,9 @@
 #include "uv.h"
 #include <SDL3/SDL_events.h>
 #include <stdlib.h>
-#include "../app.h"
+#include "../client.h"
 #include "shared.h"
-#include "../shared/parse.h"
+#include "../../shared/parse.h"
 
 /* ----------------- PRIVATE ------------------ */
 static uv_connect_t *req;

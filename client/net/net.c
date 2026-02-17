@@ -2,10 +2,9 @@
 #include "uv.h"
 #include <SDL3/SDL_events.h>
 #include <stddef.h>
-// #include <stdlib.h>
 #include "tcp.h"
 #include "udp.h"
-#include "../app.h"
+#include "../client.h"
 
 
 void net_start(App* app) {

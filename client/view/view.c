@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include "circle.h"
 #include "dashboard.h"
-#include "../vendored/SDL_ttf/include/SDL3_ttf/SDL_ttf.h"
+#include "../../vendored/SDL_ttf/include/SDL3_ttf/SDL_ttf.h"
 #include "text.h"
 
 

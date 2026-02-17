@@ -1,4 +1,4 @@
-#include "../app.h"
+#include "../client.h"
 #include "view.h"
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>

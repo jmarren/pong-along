@@ -4,8 +4,8 @@
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_surface.h>
-#include "../vendored/SDL_ttf/include/SDL3_ttf/SDL_ttf.h"
-#include "../app.h"
+#include "../../vendored/SDL_ttf/include/SDL3_ttf/SDL_ttf.h"
+#include "../client.h"
 
 // static SDL_Texture *texture = NULL;
 // static TTF_Font *font = NULL;

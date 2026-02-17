@@ -3,7 +3,7 @@
 #define VIEW_H
 
 #include <SDL3/SDL_render.h>
-#include "../app.h"
+#include "../client.h"
 
 #define WINDOW_W 2000
 #define WINDOW_H 1000
