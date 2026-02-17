@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "../app.h"
 #include "shared.h"
+#include "../shared/parse.h"
 
 /* ----------------- PRIVATE ------------------ */
 static uv_connect_t *req;
@@ -64,8 +65,7 @@ void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
 }
 
 
-/* ----------------- PUBLIC ------------------ */
-/* write to the tcp connection  */
+/* write a string to the tcp connection  */
 void tcp_write(char *message) {
 
     // initialize write buffer
@@ -83,6 +83,42 @@ void tcp_write(char *message) {
     // perform write 
     uv_write(write_req, req->handle, &buf, 1, on_write_end);
 }
+
+
+/* ----------------- PUBLIC ------------------ */
+
+/* write a message type and content to the connection */
+void tcp_write_msg_1(char* type, char* content) {
+	// calculate size of full request string
+	size_t len = strlen(type) + strlen(content) + strlen("\r\n");
+
+	// allocate the full request string
+	char* str = calloc(len + 1, sizeof(char));
+
+	// copy type and content to the request string
+	sprintf(str, "%s:%s\r\n", type, content);
+
+	// write to connection
+	tcp_write(str);
+
+}
+
+/* writes a message to the tcp connection  */
+void tcp_write_msg_2(message* msg) {
+
+	// calculate size of full request string
+	size_t len = strlen(msg->type) + strlen(msg->content) + strlen("\r\n");
+
+	// allocate the request string
+	char* str = calloc(len + 1, sizeof(char));
+
+	// copy type and content to the request string
+	sprintf(str, "%s:%s\r\n", msg->type, msg->content);
+
+	// write request string to connection
+	tcp_write(str);
+}
+
 
 
 /* handles a new tcp connection to the server */

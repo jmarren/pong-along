@@ -16,7 +16,7 @@
 // #include "../net/net.h"
 #include "../net/tcp.h"
 #include "../net/udp.h"
-#include "../net/parse.h"
+#include "../shared/parse.h"
 
 #define QUIT 1
 #define CONTINUE 0
@@ -49,23 +49,9 @@ void handle_return(App* app) {
 	// set game phase to pointing
 	app->game_phase = choosing_opponent;
 
-	// calculate length of request message
-	size_t req_msg_len = strlen("username: \r\n") + strlen(app->username) + 1;
+	tcp_write_msg_1("username", app->username);
 
-	// calloc tcp request message
-	char* req_msg = calloc(req_msg_len, sizeof(char));
-
-	//  copy "username: " to req_message
-	strncpy(req_msg, "username: ", strlen("username: "));
-
-	// append the username to the end of req_msg
-	strcat(req_msg, app->username);
-	strcat(req_msg, "\r\n");
-
-	// write the req_msg to the connection
-	tcp_write(req_msg);
-	// query player list
-	tcp_write("players?\r\n");
+	tcp_write_msg_1("query", "players");
 
 }
 
@@ -79,22 +65,7 @@ void handle_backspace(App* app) {
 
 
 void select_opponent(App* app) {
-	char* write_req;
-	
-	char* opponent_username = app->active_users.base[app->selected_opponent];
-
-	size_t len;
-	len = strlen("selected-opponent: \r\n") + strlen(opponent_username);
-
-	write_req = calloc(len + 1, sizeof(char));
-
-	strncpy(write_req, "selected-opponent: ", strlen("selected-opponent: "));
-	strncat(write_req, opponent_username, strlen(opponent_username));
-	strncat(write_req, "\r\n", 3);
-	printf("write_req = %s\n", write_req);
-
-	tcp_write(write_req);
-	
+	tcp_write_msg_1("selected-opponent", app->active_users.base[app->selected_opponent]);
 }
 
 
@@ -273,7 +244,6 @@ void handle_collisions(App *app) {
 		float rect_left_x = app->rect_left.x;
 		float rect_left_y = app->rect_left.y;
 
-		// printf("circlex = %f\ncircley = %f\nrect_right_x = %f\n rect_right_y = %f\n", circlex, circley, rect_right_x, rect_right_y);
 
 		if (circlex + circle->radius >= rect_right_x && 
 		    circley - circle->radius <= rect_right_y + app->rect_right.h &&
@@ -298,14 +268,6 @@ void loop_start(App* app) {
 	input_text = malloc(sizeof(char) * 100);
 	
 	int ticks = SDL_GetTicks();
-
-	//
-	// write_udp("1");
-	// write_udp("2");
-	// write_udp("3");
-	// write_udp("4");
-
-	// write_udp("hi");
 
 
 	while (true) {

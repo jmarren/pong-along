@@ -35,8 +35,8 @@ add_executable(main WIN32
 	net/udp.h
 	net/shared.c
 	net/shared.h
-	net/parse.h
-	net/parse.c
+	shared/parse.h
+	shared/parse.c
 	loop/loop.c
 	loop/loop.h
 	view/circle.c
@@ -51,10 +51,18 @@ add_executable(main WIN32
 )
 
 add_executable(server WIN32
-	server.c
-	app.h
-	net/parse.h
-	net/parse.c
+	server/server.c
+	server/server.h
+	shared/parse.c
+	shared/parse.h
+	server/tcp.c
+	server/tcp.h
+	server/udp.c
+	server/udp.h
+	server/handlers/handlers.c
+	server/handlers/handlers.h
+	server/shared.c
+	server/shared.h
 )
 
 # Link to the actual SDL3 library.

@@ -1,7 +1,24 @@
+
 #ifndef PARSE_H
 #define PARSE_H
 
-#include "../app.h"
+
+
+typedef struct {
+	char* type;
+	char* content;
+} message;
+
+
+typedef struct {
+	char** messages;
+	int count;
+} raw_msg_list;
+
+typedef struct {
+	message* base;
+	int len;
+} message_list;
 
 raw_msg_list parse_messages(char* raw);
 message parse_message(char* msg);
