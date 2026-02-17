@@ -5,14 +5,14 @@
 #include "server.h"
 #include <stdlib.h>
 #include <string.h>
-#include "shared.h"
 #include "../shared/parse.h"
+#include "../shared/buffer.h"
 #include "handlers/handlers.h"
 
 #define BACKLOG 1000
 #define TCP_PORT 7000
 
-static server_t* server_ref;
+static server_t* server;
 
 
 void handle_tcp_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
@@ -29,7 +29,7 @@ void handle_tcp_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
 		message msg = parse_message(msg_list.messages[i]);
 
 		if (strcmp(msg.type, "username") == 0) {
-			handle_username(server_ref, client, &msg);
+			handle_username(server, client, &msg);
 		}
 
 		if (strcmp(msg.type, "selected-opponent") == 0) {
@@ -37,7 +37,7 @@ void handle_tcp_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
 		}
 
 		if (strcmp(msg.type, "query") == 0) {
-			handle_players_query(server_ref, client, &msg);
+			handle_players_query(server, client, &msg);
 		}
 	}
 
@@ -63,21 +63,21 @@ void on_new_tcp_connection(uv_stream_t *stream, int status) {
     uv_tcp_t *client = (uv_tcp_t*) malloc(sizeof(uv_tcp_t));
 
     // initialize tcp for client
-    uv_tcp_init(server_ref->loop, client);
+    uv_tcp_init(server->loop, client);
 	
     // accept connection and read if if no error is returned
     if (uv_accept(stream, (uv_stream_t*) client) == 0) {
 	// pass the client (casted to uv_stream_t)
 	// as well as a callback to allocate the buffer
 	// and a function the handle the request
-        uv_read_start((uv_stream_t*) client, alloc_buffer, handle_tcp_read);
+        uv_read_start((uv_stream_t*) client, buffer_alloc_uv_handle, handle_tcp_read);
     }
 }
 
 
-void server_init_tcp(server_t* server) {
-    uv_tcp_t* tcp_server = &(server->tcp_server);
-    server_ref = server;
+void server_init_tcp(server_t* server_ref) {
+    server = server_ref;
+    uv_tcp_t* tcp_server = &(server_ref->tcp_server);
     uv_loop_t* loop_ref = server_ref->loop;
 
     // initialize tcp server with loop and pointer to server

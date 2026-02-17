@@ -33,8 +33,8 @@ add_executable(client WIN32
 	client/net/tcp.h
 	client/net/udp.c
 	client/net/udp.h
-	client/net/shared.c
-	client/net/shared.h
+	shared/buffer.c
+	shared/buffer.h
 	shared/parse.h
 	shared/parse.c
 	client/loop.c
@@ -48,6 +48,8 @@ add_executable(client WIN32
 	vendored/cc/array.h
 	vendored/cc/cc_common.h
 	vendored/cc/cc_common.c
+	shared/encode.c
+	shared/encode.h
 )
 
 add_executable(server WIN32
@@ -61,8 +63,10 @@ add_executable(server WIN32
 	server/udp.h
 	server/handlers/handlers.c
 	server/handlers/handlers.h
-	server/shared.c
-	server/shared.h
+	shared/buffer.c
+	shared/buffer.h
+	shared/encode.c
+	shared/encode.h
 )
 
 # Link to the actual SDL3 library.

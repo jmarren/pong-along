@@ -2,7 +2,7 @@
 #include "uv.h"
 #include <stdlib.h>
 #include "server.h"
-#include "shared.h"
+#include "../shared/buffer.h"
 
 #define UDP_PORT 8888
 
@@ -48,7 +48,7 @@ void server_init_udp(server_t* server) {
 
 
     // initialize callback to receive data on udp socket
-    err = uv_udp_recv_start(udp_server, alloc_buffer, on_udp_recv);
+    err = uv_udp_recv_start(udp_server, buffer_alloc_uv_handle, on_udp_recv);
     // handle listen error
     if (err) {
         fprintf(stderr, "UDP recv error: %s\n", uv_strerror(err));

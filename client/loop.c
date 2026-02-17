@@ -21,10 +21,6 @@
 #define QUIT 1
 #define CONTINUE 0
 
-char *input_text;
-char *composition;
-Sint32 cursor;
-Sint32 selection_len;
 
 void handle_space(App* app) {
 	app->game_phase = playing;
@@ -265,10 +261,7 @@ void handle_collisions(App *app) {
 
 void loop_start(App* app) {
 
-	input_text = malloc(sizeof(char) * 100);
-	
 	int ticks = SDL_GetTicks();
-
 
 	while (true) {
 		

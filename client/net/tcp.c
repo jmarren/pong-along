@@ -3,8 +3,10 @@
 #include <SDL3/SDL_events.h>
 #include <stdlib.h>
 #include "../client.h"
-#include "shared.h"
 #include "../../shared/parse.h"
+#include "../../shared/buffer.h"
+#include "../../shared/encode.h"
+
 
 /* ----------------- PRIVATE ------------------ */
 static uv_connect_t *req;
@@ -71,11 +73,8 @@ void tcp_write(char *message) {
     // initialize write buffer
     uv_buf_t buf;
 
-    // set length of buffer to message length
-    buf.len = strlen(message);
-
-    // assign base to message
-    buf.base = message;
+    // assign message to buffer
+    buffer_assign(message, &buf);
 
     // allocate write request
     uv_write_t* write_req = (uv_write_t*)malloc(sizeof(uv_write_t));
@@ -89,14 +88,9 @@ void tcp_write(char *message) {
 
 /* write a message type and content to the connection */
 void tcp_write_msg_1(char* type, char* content) {
-	// calculate size of full request string
-	size_t len = strlen(type) + strlen(content) + strlen("\r\n");
 
-	// allocate the full request string
-	char* str = calloc(len + 1, sizeof(char));
-
-	// copy type and content to the request string
-	sprintf(str, "%s:%s\r\n", type, content);
+	// encode to protocol format 
+	char* str = encode_message(type, content);
 
 	// write to connection
 	tcp_write(str);
@@ -106,14 +100,7 @@ void tcp_write_msg_1(char* type, char* content) {
 /* writes a message to the tcp connection  */
 void tcp_write_msg_2(message* msg) {
 
-	// calculate size of full request string
-	size_t len = strlen(msg->type) + strlen(msg->content) + strlen("\r\n");
-
-	// allocate the request string
-	char* str = calloc(len + 1, sizeof(char));
-
-	// copy type and content to the request string
-	sprintf(str, "%s:%s\r\n", msg->type, msg->content);
+	char* str = encode_message(msg->type, msg->content);
 
 	// write request string to connection
 	tcp_write(str);
@@ -133,7 +120,7 @@ void on_connect(uv_connect_t *new_req, int status) {
     req = new_req;
 
     // start the read callback
-    uv_read_start(req->handle, alloc_buffer, read_data);
+    uv_read_start(req->handle, buffer_alloc_uv_handle, read_data);
 }
 
 
