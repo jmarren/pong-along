@@ -23,6 +23,7 @@ void on_udp_recv(uv_udp_t* req, ssize_t nread, const uv_buf_t* buf, const struct
 
 	   if (nread != 0) {
 	     printf("on_read: %s\n", buf->base);
+	     fflush(stdout);
 	     free(buf->base);
 	   }
 }
