@@ -59,10 +59,11 @@ typedef struct {
 	void for_each_##Typename(Typename* src, void_from_##x_Type fn) {\
 		for (int i = 0; i < src->len; i++) {\
 			(fn)(src->base[i]);\ 
-		} \
+		}\
 	}
 
 
+/* defines header for for_each_##Typename function */
 #define DEFINE_ARR_FOR_EACH_H(Typename, x_Type)\
 	void for_each_##Typename(Typename* src, void_from_##x_Type fn);\
 
@@ -76,11 +77,12 @@ typedef struct {
 		arr->len++; \
 	};
 
-
+/* defines bool_from_##x_Type as a function that returns a bool from an x_Type */
 #define DEFINE_TYPE_TO_BOOL_FUNC(x_Type)\
 	typedef bool (bool_from_##x_Type)(x_Type)\
 
 
+/* defines a function that filters the provided array using the provided bool_from_##x_Type function */
 #define DEFINE_ARR_FILTER(Typename, x_Type)\
 	Typename filter_##Typename(Typename* arr, bool_from_##x_Type fn) {\
 		Typename ret = create_##Typename();\
@@ -92,13 +94,15 @@ typedef struct {
 		return ret;\
 	}
 
-
-
-
+/* defines header for array filter function */
 #define DEFINE_ARR_FILTER_H(Typename, x_Type)\
 	Typename filter_##Typename(Typename* arr, bool_from_##x_Type fn);\
 
 
+/** 
+ * defines a function that set copies that value at index i to the ret pointer 
+ * returns 1 if index is out of bounds
+ **/
 #define DEFINE_ARR_GET_AT_IDX(Typename, x_Type)\
 	int get_at_idx_##Typename(Typename* arr, int i, x_Type* ret) {\
 		if (i >= arr->len) {\
@@ -108,33 +112,30 @@ typedef struct {
 		return 0;\
 	}
 
+/* defines a header for the get_at_idx_##Typename function */
 #define DEFINE_ARR_GET_AT_IDX_H(Typename, x_Type)\
 	int get_at_idx_##Typename(Typename* arr, int i, x_Type* ret);\
 
-
+/* defines a function that gets that last element of the arr */
 #define DEFINE_ARR_GET_LAST(Typename, x_Type)\
 	x_Type get_last_##Typename(Typename* arr) {\
 		return arr->base[arr->len - 1];\
 	}
 
+/* defines a header for get_last_##Typename */
 #define DEFINE_ARR_GET_LAST_H(Typename, x_Type)\
 	x_Type get_last_##Typename(Typename* arr);\
 
-#define DEFINE_ARR_PRINT(Typename, x_Type)\
-	void print_##Typename(Typename* arr) {\
-		print_##x_Type(arr);\
-	}
+/* 
+ defines a header for get_last_##Typename 
+ #define DEFINE_ARR_PRINT(Typename, x_Type)\
+ 	void print_##Typename(Typename* arr) {\
+ 		print_##x_Type(arr);\
+ 	}
 
-#define DEFINE_ARR_PRINT_H(Typename, x_Type)\
-	void print_##Typename(Typename* arr);\
-
-// #define DEFINE_ARR_JOIN_STR(Typename, x_Type)\
-// 	char* join_str_##Typename(Typename* arr) {\
-// 		int cap = 50;
-// 		int len = 
-// 		char* ret = calloc(50, sizeof(char));
-// 		for (int
-
+ #define DEFINE_ARR_PRINT_H(Typename, x_Type)\
+ 	void print_##Typename(Typename* arr);\
+*/
 
 #define DEFINE_ARR_FUNCTIONS(Typename, x_Type)\
 	DEFINE_ARR_CREATE(Typename, x_Type); \
@@ -160,98 +161,4 @@ typedef struct {
 	DEFINE_ARR_GET_AT_IDX_H(Typename, x_Type);\
 
 
-
-// DEFINE_ARR_H(int_arr, int)
-// DEFINE_ARR_H(user_arr, user_t)
-//
-
-
-//
-//
-
-// Define a macro that takes the desired type name (alias) and optionally the internal tag name
-
-
-// array array_create(void) {
-// 	array arr;
-//
-// 	arr.len = 0;
-// 	arr.cap = 10;
-// 	arr.base = calloc(10, sizeof(void*));
-// 	return  arr;
-// }
-
-	
-
-// #define DEFINE_ARR_APPEND(Typename, Type) \
-
-
-// void array_expand(array* arr) {
-//
-// 	int new_cap = (arr->cap * 2) * sizeof(void*);
-//
-// 	arr->base = realloc(arr->base, new_cap);
-// 	arr->cap = new_cap; 
-//
-// }
-//
-//
-// void array_append(array* arr, void* elt) {
-// 	if (arr->len + 1 > arr->cap) {
-// 		array_expand(arr);
-// 	}
-//
-// 	arr->base[arr->len] = elt;
-// 	arr->len++;
-// }
-//
-
-//
-// DEFINE_ARR_TYPE(int_arr, int);
-// DEFINE_ARR_CREATE(int_arr, int);
-// DEFINE_ARR_EXPAND(int_arr, int);
-// DEFINE_ARR_APPEND(int_arr, int);
-//
-
-// #define DEF_ADD(name) \
-//     int add_##name(int x, int y) { \
-//     return x + y; \
-// }
-
-
-// DEFINE_STRUCT_TYPE(my_struct, int);
-
-
-// #define MY_MEMBER_TYPE int
-//
-// // Use the macro within a structure definition
-// struct MyStruct {
-//     MY_MEMBER_TYPE data;
-//     float another_member;
-// };
-
-// 1. Define a list of structure members using an X-macro pattern
-// #define MEMBER_LIST(X) \
-//     X(int, id)         \
-//     X(double, value)   \
-//     X(char, status)
-//
-//
-// MEMBER_LIST(hi);
-//
-// #define LIST_OF_VARIABLES \
-//     X(value1) \
-//     X(value2) \
-//     X(value3)
-//
-// #define X(name) int name;
-// LIST_OF_VARIABLES
-// #undef X
-//
-
-
-
-
-void array_append(array* arr, void* elt);
-array array_create(void);
 #endif

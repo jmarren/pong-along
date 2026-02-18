@@ -44,8 +44,16 @@ int main(void) {
     string str = create_string();
 
     append_string(&str, "x");
+    append_string(&str, "y");
 
     printf("str = %s\n", str.base);
+
+
+    string_arr usernames = get_usernames(&users);
+
+    string joined_usernames = join_string_arr(&usernames, ", ");
+
+    println(joined_usernames);
 
 	
 	

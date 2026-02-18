@@ -3,10 +3,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../../dsa/array.h"
+#include "../../dsa/string.h"
 
 #define SUCCESS 0
 #define FAIL 1
 
+
+
+DEFINE_ARR_FUNCTIONS(user_arr, user_t);
 
 void print_user_t(user_t* user) { 
 	printf("%s\n", user->username);
@@ -16,9 +20,6 @@ char* stringify_user_t(user_t* user) {
 	return user->username;
 }
 
-DEFINE_ARR_FUNCTIONS(user_arr, user_t);
-
-
 void user_print_username(user_t user) {
 	printf("username = %s\n", user.username);
 }
@@ -26,6 +27,18 @@ void user_print_username(user_t user) {
 void print_usernames(user_arr* arr) {
 	for_each_user_arr(arr, &user_print_username);
 }
+
+string_arr get_usernames(user_arr* arr) {
+	string_arr str_arr = create_string_arr();
+	
+	for (int i = 0; i < arr->len; i++) {
+		string str = create_string();
+		set_string(&str, arr->base[i].username);
+		append_string_arr(&str_arr, &str);	
+	}
+	return str_arr;
+}
+
 
 
 
