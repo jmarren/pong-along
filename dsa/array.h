@@ -1,8 +1,8 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
-#include "../server/models/users.h"
-#include <stdlib.h>
+// #include "../server/models/users.h"
+// #include <stdlib.h>
 typedef struct {
 	void** base;
 	int len;
@@ -52,6 +52,19 @@ typedef struct {
 		arr->cap = new_cap; \
 	};
 
+#define DEFINE_TYPE_TO_VOID_FUNC(x_Type)\
+	typedef void (void_from_##x_Type)(x_Type)\
+
+#define DEFINE_ARR_FOR_EACH(Typename, x_Type)\
+	void for_each_##Typename(Typename* src, void_from_##x_Type fn) {\
+		for (int i = 0; i < src->len; i++) {\
+			(fn)(src->base[i]);\ 
+		} \
+	}
+
+
+#define DEFINE_ARR_FOR_EACH_H(Typename, x_Type)\
+	void for_each_##Typename(Typename* src, void_from_##x_Type fn);\
 
 /* defines function to append an array of the provided type */
 #define DEFINE_ARR_APPEND(Typename, x_Type)  \
@@ -64,21 +77,53 @@ typedef struct {
 	};
 
 
+#define DEFINE_TYPE_TO_BOOL_FUNC(x_Type)\
+	typedef bool (bool_from_##x_Type)(x_Type)\
 
-#define DEFINE_ARR_FULL(Typename, x_Type)\
+
+#define DEFINE_ARR_FILTER(Typename, x_Type)\
+	Typename filter_##Typename(Typename* arr, bool_from_##x_Type fn) {\
+		Typename ret = create_##Typename();\
+		for (int i = 0; i < arr->len; i++) {\
+			if ((fn)(arr->base[i])) { \
+				append_##Typename(&ret, &(arr->base[i]));\
+			}\
+		}\
+		return ret;\
+	}
+
+
+#define DEFINE_ARR_FILTER_H(Typename, x_Type)\
+	Typename filter_##Typename(Typename* arr, bool_from_##x_Type fn);\
+
+#define DEFINE_ARR_FUNCTIONS(Typename, x_Type)\
 	DEFINE_ARR_CREATE(Typename, x_Type); \
 	DEFINE_ARR_EXPAND(Typename, x_Type); \
 	DEFINE_ARR_APPEND(Typename, x_Type); \
+	DEFINE_ARR_FOR_EACH(Typename, x_Type);\
+	DEFINE_ARR_FILTER(Typename, x_Type);\
 
-#define DEFINE_ARR_H(Typename, x_Type)\
+
+
+#define DEFINE_ARR_H(Typename, x_Type) \
 	DEFINE_ARR_TYPE(Typename, x_Type); \
 	DEFINE_ARR_CREATE_H(Typename, x_Type); \
 	DEFINE_ARR_EXPAND_H(Typename, x_Type); \
 	DEFINE_ARR_APPEND_H(Typename, x_Type); \
+	DEFINE_TYPE_TO_VOID_FUNC(x_Type);\
+	DEFINE_TYPE_TO_BOOL_FUNC(x_Type);\
+	DEFINE_ARR_FOR_EACH_H(Typename, x_Type);\
+	DEFINE_ARR_FILTER_H(Typename, x_Type);\
 
 
-DEFINE_ARR_H(int_arr, int)
-DEFINE_ARR_H(user_arr, user_t)
+
+// DEFINE_ARR_H(int_arr, int)
+// DEFINE_ARR_H(user_arr, user_t)
+//
+
+
+//
+//
 
 // Define a macro that takes the desired type name (alias) and optionally the internal tag name
 

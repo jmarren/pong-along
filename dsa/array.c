@@ -1,9 +1,7 @@
 #include "array.h"
 #include <stdlib.h>
-#include "../server/models/users.h"
 
-DEFINE_ARR_FULL(int_arr, int)
-DEFINE_ARR_FULL(user_arr, user_t)
+// DEFINE_ARR_FUNCTIONS(int_arr, int)
 
 array array_create(void) {
 	array arr;

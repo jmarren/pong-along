@@ -3,6 +3,7 @@
 
 #include "uv.h"
 #include <stdbool.h>
+#include "../../dsa/array.h"
 typedef struct {
 	char* username;
 	uv_stream_t* stream;
@@ -17,6 +18,8 @@ typedef struct {
 	int max_capacity;
 } users_arr;
 
+
+DEFINE_ARR_H(user_arr, user_t);
 
 typedef bool (user_to_bool)(user_t* user);
 typedef void (user_to_void)(user_t* user);

@@ -52,6 +52,8 @@ void handle_username(server_t* server, uv_stream_t* client, message* msg) {
 		client,
 	};
 
+	// append_user_arr(&(server->active_users), &user);
+
 	users_arr_append(&(server->active_users), &user);
 
 }
@@ -68,6 +70,8 @@ void handle_players_query(server_t* server, uv_stream_t* client, message* msg) {
 	// strcpy(res, "players:");
 
 	char* other_usernames = users_arr_other_users_usernames(client, &(server->active_users));
+
+	
 
 	sprintf(res, "players:%s\r\n", other_usernames);
 

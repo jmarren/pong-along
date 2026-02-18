@@ -2,10 +2,14 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-// #include "../../dsa/array.h"
+#include "../../dsa/array.h"
 
 #define SUCCESS 0
 #define FAIL 1
+
+
+DEFINE_ARR_FUNCTIONS(user_arr, user_t);
+
 // #define DECLARE_VAR(TYPE, NAME) TYPE NAME
 
 // #define ARRAY_CREATE(x) (

@@ -2,8 +2,9 @@
 #define SERVER_H
  
 
-#include "models/users.h"
+// #include "models/users.h"
 #include "uv.h"
+#include "models/users.h"
 
 
 typedef struct {
