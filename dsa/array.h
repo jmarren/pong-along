@@ -93,8 +93,48 @@ typedef struct {
 	}
 
 
+
+
 #define DEFINE_ARR_FILTER_H(Typename, x_Type)\
 	Typename filter_##Typename(Typename* arr, bool_from_##x_Type fn);\
+
+
+#define DEFINE_ARR_GET_AT_IDX(Typename, x_Type)\
+	int get_at_idx_##Typename(Typename* arr, int i, x_Type* ret) {\
+		if (i >= arr->len) {\
+			return 1;\
+		}\
+		*ret = arr->base[i];\
+		return 0;\
+	}
+
+#define DEFINE_ARR_GET_AT_IDX_H(Typename, x_Type)\
+	int get_at_idx_##Typename(Typename* arr, int i, x_Type* ret);\
+
+
+#define DEFINE_ARR_GET_LAST(Typename, x_Type)\
+	x_Type get_last_##Typename(Typename* arr) {\
+		return arr->base[arr->len - 1];\
+	}
+
+#define DEFINE_ARR_GET_LAST_H(Typename, x_Type)\
+	x_Type get_last_##Typename(Typename* arr);\
+
+#define DEFINE_ARR_PRINT(Typename, x_Type)\
+	void print_##Typename(Typename* arr) {\
+		print_##x_Type(arr);\
+	}
+
+#define DEFINE_ARR_PRINT_H(Typename, x_Type)\
+	void print_##Typename(Typename* arr);\
+
+// #define DEFINE_ARR_JOIN_STR(Typename, x_Type)\
+// 	char* join_str_##Typename(Typename* arr) {\
+// 		int cap = 50;
+// 		int len = 
+// 		char* ret = calloc(50, sizeof(char));
+// 		for (int
+
 
 #define DEFINE_ARR_FUNCTIONS(Typename, x_Type)\
 	DEFINE_ARR_CREATE(Typename, x_Type); \
@@ -102,6 +142,8 @@ typedef struct {
 	DEFINE_ARR_APPEND(Typename, x_Type); \
 	DEFINE_ARR_FOR_EACH(Typename, x_Type);\
 	DEFINE_ARR_FILTER(Typename, x_Type);\
+	DEFINE_ARR_GET_LAST(Typename, x_Type);\
+	DEFINE_ARR_GET_AT_IDX(Typename, x_Type);\
 
 
 
@@ -114,6 +156,8 @@ typedef struct {
 	DEFINE_TYPE_TO_BOOL_FUNC(x_Type);\
 	DEFINE_ARR_FOR_EACH_H(Typename, x_Type);\
 	DEFINE_ARR_FILTER_H(Typename, x_Type);\
+	DEFINE_ARR_GET_LAST_H(Typename, x_Type);\
+	DEFINE_ARR_GET_AT_IDX_H(Typename, x_Type);\
 
 
 

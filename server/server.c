@@ -5,15 +5,16 @@
 #include "udp.h"
 #include "tcp.h"
 #include <stdbool.h>
+#include "../dsa/string.h"
 // #include "models/users.h"
 
 
 server_t server;
 
 
-void user_print_username(user_t user) {
-	printf("username = %s\n", user.username);
-}
+// void user_print_username(user_t user) {
+// 	printf("username = %s\n", user.username);
+// }
 
 bool name_is_anthony(user_t user) {
 	if (user.username == "anthony") return true;
@@ -26,22 +27,47 @@ int main(void) {
 	
     user_t anthony;
     user_t james;
+    user_t kevin;
 
     anthony.username = "anthony";
+    kevin.username = "kevin";
     james.username = "james";
 
     append_user_arr(&users, &anthony);
-    append_user_arr(&users, &anthony);
+    append_user_arr(&users, &kevin);
     append_user_arr(&users, &james);
 
     printf("users.base[0].username = %s\n", users.base[0].username);
 
-    for_each_user_arr(&users, &user_print_username);
+    print_usernames(&users);
 
-    user_arr filtered_arr = filter_user_arr(&users, name_is_anthony);
+    string str = create_string();
+
+    append_string(&str, "x");
+
+    printf("str = %s\n", str.base);
+
 	
-    printf("anthony only: \n");
-    for_each_user_arr(&filtered_arr, &user_print_username);
+	
+
+
+    // for_each_user_arr(&users, &user_print_username);
+
+    // user_arr filtered_arr = filter_user_arr(&users, name_is_anthony);
+    //
+    // printf("anthony only: \n");
+    // for_each_user_arr(&filtered_arr, &user_print_username);
+    //
+    // user_t last = get_last_user_arr(&users);
+    //
+    // user_print_username(last);
+
+	//    user_t second;
+	//
+	//    printf("second: \n");
+	//    if (get_at_idx_user_arr(&users, 1, &second) == 0) {
+	// user_print_username(second);
+	//    }
 
     // filter_user_arr(user_arr *arr, bool_from_user_t *fn)
 

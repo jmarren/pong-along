@@ -8,7 +8,28 @@
 #define FAIL 1
 
 
+void print_user_t(user_t* user) { 
+	printf("%s\n", user->username);
+}
+
+char* stringify_user_t(user_t* user) { 
+	return user->username;
+}
+
 DEFINE_ARR_FUNCTIONS(user_arr, user_t);
+
+
+void user_print_username(user_t user) {
+	printf("username = %s\n", user.username);
+}
+
+void print_usernames(user_arr* arr) {
+	for_each_user_arr(arr, &user_print_username);
+}
+
+
+
+
 
 // #define DECLARE_VAR(TYPE, NAME) TYPE NAME
 
