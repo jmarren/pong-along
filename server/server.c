@@ -31,9 +31,23 @@ int main(void) {
 
 	int_arr arr = create_int_arr();
 
-	append_int_arr(&arr, 1);
+	int one = 1;
+
+	append_int_arr(&arr, &one);
 	
 	printf("%d\n", arr.base[0]);
+
+
+	
+	user_arr users = create_user_arr();
+
+	user_t user1;
+	user1.username = "jeremy";
+
+	append_user_arr(&users, &user1);
+
+	printf("users.base[0]->username = %s\n", users.base[0].username);
+
 
 
     // array arr = array_create();

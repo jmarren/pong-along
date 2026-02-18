@@ -1,6 +1,7 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
+#include "../server/models/users.h"
 #include <stdlib.h>
 typedef struct {
 	void** base;
@@ -14,8 +15,8 @@ typedef struct {
 
 /* defines struct for array of provided type */
 #define DEFINE_ARR_TYPE(TypeName, x_Type) \
-    typedef struct TypeName {        \
-        x_Type* base;                      \
+    typedef struct TypeName { \
+        x_Type* base; \
 	int cap; \
 	int len; \
     } TypeName; \
@@ -30,19 +31,8 @@ typedef struct {
 
 /* defines header for appending array of type */
 #define DEFINE_ARR_APPEND_H(Typename,x_Type) \
-	void append_##Typename(Typename* arr, x_Type elt); \
+	void append_##Typename(Typename* arr, x_Type* elt); \
 
-/* define int_arr type for array of type int */
-DEFINE_ARR_TYPE(int_arr, int);
-
-/* define header for creating int array type */
-DEFINE_ARR_CREATE_H(int_arr, int);
-
-/* define header for expanding int array type */
-DEFINE_ARR_EXPAND_H(int_arr, int);
-
-/* define header for appending int array type */
-DEFINE_ARR_APPEND_H(int_arr, int);
 
 /* defines function to create an array of the provided type */
 #define DEFINE_ARR_CREATE(Typename, x_Type) \
@@ -65,19 +55,30 @@ DEFINE_ARR_APPEND_H(int_arr, int);
 
 /* defines function to append an array of the provided type */
 #define DEFINE_ARR_APPEND(Typename, x_Type)  \
-	void append_##Typename(Typename* arr, x_Type elt) { \
+	void append_##Typename(Typename* arr, x_Type* elt) { \
 		if (arr->len + 1 > arr->cap) { \
 			expand_##Typename(arr); \
 		} \
-		arr->base[arr->len] = elt; \
+		arr->base[arr->len] = *elt; \
 		arr->len++; \
 	};
 
 
-#define DEFINE_ARRAY_FULL(Typename,  x_Type) \
+
+#define DEFINE_ARR_FULL(Typename, x_Type)\
 	DEFINE_ARR_CREATE(Typename, x_Type); \
 	DEFINE_ARR_EXPAND(Typename, x_Type); \
 	DEFINE_ARR_APPEND(Typename, x_Type); \
+
+#define DEFINE_ARR_H(Typename, x_Type)\
+	DEFINE_ARR_TYPE(Typename, x_Type); \
+	DEFINE_ARR_CREATE_H(Typename, x_Type); \
+	DEFINE_ARR_EXPAND_H(Typename, x_Type); \
+	DEFINE_ARR_APPEND_H(Typename, x_Type); \
+
+
+DEFINE_ARR_H(int_arr, int)
+DEFINE_ARR_H(user_arr, user_t)
 
 // Define a macro that takes the desired type name (alias) and optionally the internal tag name
 
