@@ -2,9 +2,21 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+// #include "../../dsa/array.h"
 
 #define SUCCESS 0
 #define FAIL 1
+// #define DECLARE_VAR(TYPE, NAME) TYPE NAME
+
+// #define ARRAY_CREATE(x) (
+//
+// )
+
+// users_arr* users_arr_create(void) {
+// 	array ret = array_create();
+// 	return (users_arr*)&ret;
+// }
+
 
 // initialize a new users_arr
 void users_arr_init(users_arr* users_arr, int initial_cap, int max_cap) { 
@@ -101,9 +113,17 @@ void users_arr_for_each(users_arr* arr, user_to_void fn) {
 //  return user_arr
 //
 
-// void* users_arr_map(users_arr* arr, user_to_void_ptr fn) {
-// 	// users_arr_for_each(users_arr *arr, user_to_void *fn)
-// }
+void* users_arr_map(users_arr* arr, user_to_void_ptr fn, void* ret) {
+	
+	ret = malloc(arr->len * sizeof(void*));
+		
+	for (int i = 0; i < arr->len; i++) {
+		
+	}
+
+	
+	// users_arr_for_each(arr, fn);
+}
 
 
 void users_arr_filter_in_place(users_arr* src, user_to_bool func) {

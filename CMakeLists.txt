@@ -73,6 +73,8 @@ add_executable(server WIN32
 	shared/encode.h
 	shared/callback.c
 	shared/callback.h
+	dsa/array.c
+	dsa/array.h
 )
 
 # Link to the actual SDL3 library.
