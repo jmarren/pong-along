@@ -21,6 +21,8 @@
 #define TITLE_TEXT "enter your username"
 
 
+
+
 // title rect
 SDL_FRect title_rect = (SDL_FRect){
 		.x = FR_MARGIN_LEFT,
@@ -77,7 +79,7 @@ void handle_return(App* app) {
 	strncpy(app->username, app->frames.enter_username.input_component.text, 100);
 
 	// set game phase to pointing
-	app->current_frame = choosing_opponent;
+	app->current_frame = select_opponent;
 	
 	tcp_write_msg_1("username", app->username);
 
@@ -129,4 +131,17 @@ void enter_username_render(App* app) {
 	text_render(app, &(app->frames.enter_username.title_component));
 	text_render(app, &(app->frames.enter_username.input_component));
 }
+
+
+
+
+
+extern fr_handler h_enter_username = (fr_handler){
+	.init = (init_handler*)enter_username_init,
+	.input = (input_handler*)enter_username_input,
+	.render = (render_handler*)enter_username_render,
+};
+
+
+
 

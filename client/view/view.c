@@ -181,7 +181,7 @@ void view_render(App *app) {
 		dashboard_render(app);
 	}
 
-	if (app->current_frame == choosing_opponent) {
+	if (app->current_frame == select_opponent) {
 		render_active_users(app);
 	}
 

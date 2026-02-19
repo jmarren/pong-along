@@ -6,23 +6,78 @@
 #include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_timer.h>
-// #include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
 #include "client.h"
-// #include "view/view.h"
 #include "frames/enter_username.h"
-// #include "view/circle.h"
-// #include "../net/net.h"
-// #include "net/tcp.h"
-// #include "net/udp.h"
-// #include "../shared/parse.h"
+#include "frames/select_opponent.h"
 
 #define QUIT 1
 #define CONTINUE 0
+
+
+
+// handle global events every iteration
+int handle_global_events(App* app, SDL_Event* event) {
+	
+	if (event->type == SDL_EVENT_QUIT) {
+		return QUIT;
+	}
+	
+	if (event->key.key == SDLK_ESCAPE) {
+		return QUIT;
+	}
+	return CONTINUE;
+}
+
+// handle events (global and frame-specific)
+int handle_events(App* app) {
+	
+	 SDL_Event event;
+	 while (SDL_PollEvent(&event)) {  
+		// handle global events and quit if neccessary
+		if (handle_global_events(app, &event) == QUIT) {
+			return QUIT;
+		};
+
+		// use the current frame input handler
+		app->handlers[app->current_frame].input(app, &event);
+	 }
+
+	return CONTINUE;
+}
+
+void render(App* app) {
+		app->handlers[app->current_frame].render(app);
+		SDL_RenderPresent(app->renderer);
+}
+
+
+
+void loop_start(App* app) {
+
+	enter_username_init(app);
+
+	int ticks = SDL_GetTicks();
+
+	while (true) {
+		
+		int new_ticks = SDL_GetTicks();
+
+		if (new_ticks - ticks > 10) {
+		    // set ticks to new_ticks
+		    ticks = new_ticks;
+
+		    // handle global events and quit if neccessary
+		    if (handle_events(app) == QUIT) break;
+			
+		    // render the app
+		    render(app);
+		}
+	}
+}
+
+
 
 
 // void handle_space(App* app) {
@@ -259,79 +314,6 @@
 // 	return CONTINUE;
 // }
 //
-
-
-int handle_global_events(App* app, SDL_Event* event) {
-	
-	if (event->type == SDL_EVENT_QUIT) {
-		return QUIT;
-	}
-	
-	if (event->key.key == SDLK_ESCAPE) {
-		return QUIT;
-	}
-	return CONTINUE;
-}
-
-int handle_events(App* app) {
-	
-	 SDL_Event event;
-	 while (SDL_PollEvent(&event)) {  
-		// handle global events and quit if neccessary
-		if (handle_global_events(app, &event) == QUIT) {
-			return QUIT;
-		};
-
-		// handle frame-specific events
-		switch (app->current_frame) {
-			case enter_username:
-				enter_username_input(app, &event);
-				break;
-			default:
-				return CONTINUE;
-		}
-	 }
-
-	return CONTINUE;
-}
-
-void render(App* app) {
-		switch (app->current_frame) {
-			case enter_username:
-				enter_username_render(app);
-				break;
-			default:
-				return;
-		}
-
-		SDL_RenderPresent(app->renderer);
-}
-
-
-
-void loop_start(App* app) {
-
-	enter_username_init(app);
-
-	int ticks = SDL_GetTicks();
-
-	while (true) {
-		
-		int new_ticks = SDL_GetTicks();
-
-		if (new_ticks - ticks > 10) {
-		    // set ticks to new_ticks
-		    ticks = new_ticks;
-
-		    // handle global events and quit if neccessary
-		    if (handle_events(app) == QUIT) break;
-			
-		    // render the app
-		    render(app);
-		}
-	}
-}
-
 
 		
 			//   // handle events and quit if QUIT is returned

@@ -22,9 +22,16 @@ typedef enum {
 	enter_username,
 	playing,
 	pointing,
-	choosing_opponent,
-} current_frame;
+	select_opponent,
+} frame;
 
+
+	// typedef bool (bool_from_##x_Type)(x_Type)
+
+
+// void enter_username_init(App* app);
+// void enter_username_input(App* app, SDL_Event* event);
+// void enter_username_render(App* app);
 
 // typedef union string_or_charp 
 
@@ -33,24 +40,24 @@ typedef struct  {
 	char* text;
 } text_component;
 
+
 typedef struct {
 	text_component input_component;
 	text_component title_component;
-	// string text_input;
-	// SDL_FRect text_input_rect;
-	// SDL_FRect dashboard_textbox;
-	// SDL_FRect dashboard_title;
 } fr_enter_username;
 
 
 typedef struct {
-	string username;
-	string_arr possible_opponents;
-	int selected_opponent;
-	SDL_FRect* player_list;
-	SDL_FRect dashboard_textbox;
-	SDL_FRect dashboard_title;
-} fr_choosing_opponent;
+	text_component title;
+	text_component* players;
+	int selected_index;
+	// string username;
+	// string_arr possible_opponents;
+	// int selected_opponent;
+	// SDL_FRect* player_list;
+	// SDL_FRect dashboard_textbox;
+	// SDL_FRect dashboard_title;
+} fr_select_opponent;
 
 typedef struct {
 	string username;
@@ -69,7 +76,7 @@ typedef struct {
 
 typedef struct { 
 	fr_enter_username enter_username;
-	fr_choosing_opponent choosing;
+	fr_select_opponent select_opponent;
 	fr_pointing pointing;
 	fr_playing playing;
 } frames_t;
@@ -89,6 +96,16 @@ typedef struct {
 	// CharpList active_users;
 	// int selected_opponent;
 
+typedef void (init_handler)(void* app);
+typedef void (input_handler)(void* app, SDL_Event* event);
+typedef void (render_handler)(void* app);
+typedef struct {
+	init_handler* init;
+	input_handler* input;
+	render_handler* render;
+} fr_handler;
+
+
 
 typedef struct {
 	// always present
@@ -97,9 +114,13 @@ typedef struct {
 	SDL_Window* window;
 	TTF_Font * font;
 	Uint32 read_event_type;
-	current_frame current_frame;
+	frame current_frame;
 	frames_t frames;
 	char* username;
+	fr_handler handlers[5];
+	
 } App;
+
+
 
 #endif

@@ -41,10 +41,13 @@ add_executable(client WIN32
 	client/loop.h
 	client/frames/enter_username.c
 	client/frames/enter_username.h
+	client/frames/select_opponent.c
+	client/frames/select_opponent.h
 	client/renderer.c
 	client/renderer.h
 	dsa/string.c
 	dsa/string.h
+
 	# client/view/circle.c
 	# client/view/circle.h
 	# client/view/physics.c
