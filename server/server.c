@@ -21,8 +21,8 @@ bool name_is_anthony(user_t user) {
 	return false;
 }
 
-int main(void) {
-	
+
+void test_dsa(void) {
     user_arr users = create_user_arr();
 	
     user_t anthony;
@@ -55,31 +55,13 @@ int main(void) {
 
     println(joined_usernames);
 
+
+}
+
+int main(void) {
 	
-	
+    server.active_users = create_user_arr();
 
-
-    // for_each_user_arr(&users, &user_print_username);
-
-    // user_arr filtered_arr = filter_user_arr(&users, name_is_anthony);
-    //
-    // printf("anthony only: \n");
-    // for_each_user_arr(&filtered_arr, &user_print_username);
-    //
-    // user_t last = get_last_user_arr(&users);
-    //
-    // user_print_username(last);
-
-	//    user_t second;
-	//
-	//    printf("second: \n");
-	//    if (get_at_idx_user_arr(&users, 1, &second) == 0) {
-	// user_print_username(second);
-	//    }
-
-    // filter_user_arr(user_arr *arr, bool_from_user_t *fn)
-
-    // server.active_users = create_user_arr();
 
     // create default libuv loop
     server.loop = uv_default_loop();

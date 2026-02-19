@@ -1,3 +1,0 @@
-
-
-https://github.com/libsdl-org/SDL_ttf/blob/main/docs/hello.c

@@ -7,23 +7,6 @@
 #include <string.h>
 #include "../server.h"
 
-
-// void get_other_users(uv_stream_t* client, users_list* other_users) {
-//
-// 	other_users->count = 0;
-// 	other_users->users = malloc(sizeof(user) * 10);
-//
-// 	for (int i = 0; i < active_users.count; i++) {
-// 		user user = active_users.users[i];
-// 		if (user.stream != client) {
-// 			other_users->users[other_users->count] = user;
-// 			other_users->count++;
-// 		}
-// 	}
-// }
-//
-
-
 void handle_selected_opponent(uv_stream_t* client, message* msg) {
 	
 	// initialize write buffer
@@ -52,52 +35,24 @@ void handle_username(server_t* server, uv_stream_t* client, message* msg) {
 		client,
 	};
 
-	// append_user_arr(&(server->active_users), &user);
-
-	users_arr_append(&(server->active_users), &user);
+	append_user_arr(&(server->active_users), &user);
 
 }
 
 void handle_players_query(server_t* server, uv_stream_t* client, message* msg) { 
 
-	// store a ref to active users
-	// users_arr* active_users = &(server->active_users); 
 
-	// allocate the response message
-	char* res = calloc(100, sizeof(char));
+	user_arr other_users = filter_not_client(&(server->active_users), client);
 
-	// // copy the type to res
-	// strcpy(res, "players:");
-
-	char* other_usernames = users_arr_other_users_usernames(client, &(server->active_users));
-
+	string_arr usernames = get_usernames(&other_users);
 	
+	string comma_joined = join_string_arr(&usernames, ", ");
 
-	sprintf(res, "players:%s\r\n", other_usernames);
 
-	printf("res = %s\n", res);
-	
+	uv_buf_t wrbuf;
 
-	
-	// // cat each username onto the res with a comma
-	// for (int i = 0; i < active_users->len; i++) {
-	// 	if (active_users->users[i].stream != client) {
-	// 		char* username = active_users->users[i].username;
-	// 		if (strlen(username) + strlen(res) > 100) { 
-	// 			break;
-	// 		}
-	// 		strcat(res, username);
-	// 		strcat(res, ",");
-	// 	}
-	// }
-	
-	// append delimiter
-	// strcat(res, "\r\n");
-
-	// initialize the write buffer with the size of the message that was read (to echo back)
-	uv_buf_t wrbuf = uv_buf_init(res, 100);
+	buffer_encode_assign("players", comma_joined.base, &wrbuf);
 		
-	
 	// allocate the write request to write back
 	uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
 

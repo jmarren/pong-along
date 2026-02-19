@@ -21,10 +21,10 @@ add_subdirectory(vendored/libuv EXCLUDE_FROM_ALL)
 add_executable(client WIN32 
 	client/client.c 
 	client/client.h 
-	client/view/view.c
-	client/view/view.h
-	client/view/dashboard.c
-	client/view/dashboard.h
+	# client/view/view.c
+	# client/view/view.h
+	# client/view/dashboard.c
+	# client/view/dashboard.h
 	client/view/text.c
 	client/view/text.h
 	client/net/net.c
@@ -39,15 +39,21 @@ add_executable(client WIN32
 	shared/parse.c
 	client/loop.c
 	client/loop.h
-	client/view/circle.c
-	client/view/circle.h
-	client/view/physics.c
-	client/view/physics.h
+	client/frames/enter_username.c
+	client/frames/enter_username.h
+	client/renderer.c
+	client/renderer.h
+	dsa/string.c
+	dsa/string.h
+	# client/view/circle.c
+	# client/view/circle.h
+	# client/view/physics.c
+	# client/view/physics.h
 	vendored/SDL_ttf/include/SDL3_ttf/SDL_ttf.h
-	vendored/cc/array.c
-	vendored/cc/array.h
-	vendored/cc/cc_common.h
-	vendored/cc/cc_common.c
+	# vendored/cc/array.c
+	# vendored/cc/array.h
+	# vendored/cc/cc_common.h
+	# vendored/cc/cc_common.c
 	shared/encode.c
 	shared/encode.h
 	shared/callback.c

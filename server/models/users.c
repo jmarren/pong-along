@@ -39,7 +39,19 @@ string_arr get_usernames(user_arr* arr) {
 	return str_arr;
 }
 
+user_arr filter_not_client(user_arr* users, uv_stream_t* client) {
 
+	user_arr others = create_user_arr();
+
+	for (int i = 0; i < users->len; i++) {
+		if (users->base[i].stream != client) { 
+			append_user_arr(&others, &(users->base[i]));
+		}
+	}
+		
+	return others;
+
+}
 
 
 

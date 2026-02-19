@@ -12,5 +12,6 @@ void set_string(string* s, char* new_str);
 string join_string_arr(string_arr* arr, char* delim);
 void printS(string s);
 void println(string s);
-
+void string_truncate(string* s);
+void concat_string(string* s, char* new_string);
 #endif

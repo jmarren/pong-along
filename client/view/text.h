@@ -3,7 +3,10 @@
 #define TEXT_H
 #include "../client.h"
 
-void text_render(App* app, char* message, SDL_FRect* rect);
+
+
+
+void text_render(App* app, text_component* text_rect);
 
 
 #endif

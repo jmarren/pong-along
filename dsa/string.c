@@ -40,6 +40,16 @@ void concat_string(string* s, char* new_string) {
 	s->len = strlen(s->base);
 }
 
+void string_truncate(string* s) {
+	if (s->len <= 0) {
+		return;
+	}
+	
+	s->base[s->len - 1] = '\0';
+	s->len--;
+
+}
+
 // void concat(
 //
 string join_string_arr(string_arr* arr, char* delim) {

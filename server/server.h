@@ -8,7 +8,7 @@
 
 
 typedef struct {
-	users_arr active_users;
+	user_arr active_users;
 	uv_loop_t* loop;
 	uv_tcp_t tcp_server;
 	uv_udp_t udp_server;

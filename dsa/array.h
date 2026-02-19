@@ -70,7 +70,7 @@ typedef struct {
 /* defines function to append an array of the provided type */
 #define DEFINE_ARR_APPEND(Typename, x_Type)  \
 	void append_##Typename(Typename* arr, x_Type* elt) { \
-		if (arr->len + 1 > arr->cap) { \
+		if (arr->len  >=  arr->cap) { \
 			expand_##Typename(arr); \
 		} \
 		arr->base[arr->len] = *elt; \

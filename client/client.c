@@ -1,5 +1,6 @@
 
 #include "client.h"
+#include "renderer.h"
 #include "view/view.h"
 #include "net/net.h"
 #include "loop.h"
@@ -26,16 +27,14 @@ App app;
 int main(int argc, char *argv[])
 {
 
-	app.game_phase = initializing;
-	app.active_users.capacity = ACTIVE_USERS_CAP;
-	app.active_users.base = (char**)calloc(ACTIVE_USERS_CAP, sizeof(char*));
-	app.active_users.len = 0;
-	app.text_input = (char*)calloc(100, sizeof(char));
-	app.username = (char*)calloc(100, sizeof(char));
+	app.current_frame = initializing;
+
 
 	app.read_event_type = SDL_RegisterEvents(1);
 
-	view_init(&app);
+	init_renderer(&app);
+
+	// view_init(&app);
 
 
 	pthread_t thread_id;
@@ -49,9 +48,8 @@ int main(int argc, char *argv[])
 	}
 
 
-	app.game_phase = typing; 
+	app.current_frame = enter_username; 
 
-	SDL_StartTextInput(app.window);
 
 	loop_start(&app);
 	return 0;
