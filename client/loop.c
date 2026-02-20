@@ -124,7 +124,7 @@ void loop_start(App* app) {
 		
 		int new_ticks = SDL_GetTicks();
 
-		if (new_ticks - ticks > 10) {
+		if (new_ticks - ticks > 20) {
 		    // set ticks to new_ticks
 		    ticks = new_ticks;
 

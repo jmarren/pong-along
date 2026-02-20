@@ -93,11 +93,7 @@ static void handle_return(App* app) {
 		
 	strncpy((char*)&(app->opponent_username), opp_name, MAX_USERNAME_CHARS);
 
-	printf("app->opponent_username = %s\n",  app->opponent_username);
-	
 	app->current_frame = gameplay;
-	
-	
 }
 
 
@@ -114,12 +110,8 @@ static void input(App* app, SDL_Event* event) {
 			case SDLK_RETURN:
 				handle_return(app);
 				break;
-
 		}
-
-		printf("selected_index = %d\n", app->frames.select_opponent.player_components.selected_index);
 	} 
-
 	return;
 }
 

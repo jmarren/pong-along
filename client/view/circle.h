@@ -12,6 +12,7 @@
 // void circle_move(App* app);
 
 void render_circle(SDL_Renderer* renderer, Circle* circle);
+void move_circle(Circle* circle);
 #endif
 
 

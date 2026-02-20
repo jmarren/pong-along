@@ -31,6 +31,10 @@ add_executable(client WIN32
 	client/view/rect.h
 	client/view/circle.c
 	client/view/circle.h
+	client/view/line.c
+	client/view/line.h
+	client/view/physics.c
+	client/view/physics.h
 	client/net/net.c
 	client/net/net.h
 	client/net/tcp.c

@@ -79,10 +79,21 @@ typedef enum {
 	gameover,
 } gameplay_state;
 
+
+
+typedef struct {
+	float originx;
+	float originy;
+	float tailx;
+	float taily;
+} line;
+
+
 typedef struct {
 	Circle circle;
 	SDL_FRect block_left;
 	SDL_FRect block_right;
+	line line;
 } gameplay_objects;
 
 typedef struct {
@@ -92,6 +103,12 @@ typedef struct {
 	gameplay_objects objects;
 } gameplay_data;
 
+
+	// float originx = app->circle.obj.pos.x + app->circle.radius +  10;
+	// float originy = app->circle.obj.pos.y;
+	// float tailx = originx + cos(app->circle.obj.direction) * 100;
+	// float taily = originy + sin(app->circle.obj.direction) * 100;
+	// SDL_RenderLine(app->renderer, originx, originy, tailx, taily);
 
 	//
 	// SDL_FRect rect_left;

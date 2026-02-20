@@ -5,6 +5,7 @@
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_render.h>
 #include "physics.h"
+#include "view.h"
 
 
 
@@ -163,35 +164,33 @@ void render_circle(SDL_Renderer *renderer, Circle *circle) {
 // }
 
 
-// void circle_bounce_wall_left_right(App* app) {
-//
-// 	app->circle.obj.direction = M_PI - app->circle.obj.direction;
-// }
-//
-// void circle_bounce_wall_top_bottom(App* app) {
-// 	app->circle.obj.direction = 2 * M_PI - app->circle.obj.direction;
-// }
-//
-//
-// void circle_move(App* app)  {
-//     	Circle* circle = &(app->circle);
-// 	// if (circle.obj.pos.x + circle.radius  >= WINDOW_W) {
-// 	// 	circle.obj.pos.x = WINDOW_W - circle.radius;
-// 	// 	circle_bounce_wall_left_right();
-// 	//
-// 	// } else if (circle.obj.pos.x  - circle.radius <= 0) {
-// 	// 	circle.obj.pos.x = circle.radius;
-// 	// 	circle_bounce_wall_left_right();
-// 	 if (circle->obj.pos.y + circle->radius >= WINDOW_H) { 
-// 		circle->obj.pos.y = WINDOW_H - circle->radius;
-// 		circle_bounce_wall_top_bottom(app);
-//
-// 	} else if (circle->obj.pos.y - circle->radius <= 0) {
-// 		circle->obj.pos.y = circle->radius;
-// 		circle_bounce_wall_top_bottom(app);
-// 	}
-//
-// 	physics_move_obj((Object *)&circle->obj);
-// }
+void circle_bounce_wall_left_right(Circle* circle) {
+	circle->obj.direction = M_PI - circle->obj.direction;
+}
+
+void circle_bounce_wall_top_bottom(Circle* circle) {
+	circle->obj.direction = 2 * M_PI - circle->obj.direction;
+}
 //
 //
+void move_circle(Circle* circle)  {
+	 if (circle->obj.pos.y + circle->radius >= WINDOW_H) { 
+		circle->obj.pos.y = WINDOW_H - circle->radius;
+		circle_bounce_wall_top_bottom(circle);
+
+	} else if (circle->obj.pos.y - circle->radius <= 0) {
+		circle->obj.pos.y = circle->radius;
+		circle_bounce_wall_top_bottom(circle);
+	}
+
+	physics_move_obj((Object *)&(circle->obj));
+}
+//
+//
+	// if (circle.obj.pos.x + circle.radius  >= WINDOW_W) {
+	// 	circle.obj.pos.x = WINDOW_W - circle.radius;
+	// 	circle_bounce_wall_left_right();
+	//
+	// } else if (circle.obj.pos.x  - circle.radius <= 0) {
+	// 	circle.obj.pos.x = circle.radius;
+	// 	circle_bounce_wall_left_right();
