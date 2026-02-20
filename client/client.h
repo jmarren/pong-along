@@ -8,8 +8,11 @@
 #include "view/physics.h"
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
+#include <stdbool.h>
 #include "../dsa/string.h"
-// #include "view/text.h"
+#include "../shared/macro.h"
+
+
 
 typedef struct {
 	Object obj;
@@ -20,20 +23,10 @@ typedef struct {
 typedef enum {
 	initializing,
 	enter_username,
-	playing,
-	pointing,
 	select_opponent,
+	gameplay,
 } frame;
 
-
-	// typedef bool (bool_from_##x_Type)(x_Type)
-
-
-// void enter_username_init(App* app);
-// void enter_username_input(App* app, SDL_Event* event);
-// void enter_username_render(App* app);
-
-// typedef union string_or_charp 
 
 typedef struct  {
 	SDL_FRect rect;
@@ -47,20 +40,19 @@ typedef struct {
 } fr_enter_username;
 
 
-typedef struct {
-	text_component title;
-	text_component* players;
+typedef struct { 
+	int len;
 	int selected_index;
-	// string username;
-	// string_arr possible_opponents;
-	// int selected_opponent;
-	// SDL_FRect* player_list;
-	// SDL_FRect dashboard_textbox;
-	// SDL_FRect dashboard_title;
+	SDL_FRect selected_container;
+	text_component base[MAX_ACTIVE_USERS];
+} player_component_list;
+
+typedef struct {
+	text_component title_component;
+	player_component_list player_components;
 } fr_select_opponent;
 
 typedef struct {
-	string username;
 	string_arr possible_opponents;
 	int selected_opponent;
 	SDL_FRect rect_left;
@@ -69,7 +61,6 @@ typedef struct {
 } fr_pointing;
 
 typedef struct {
-	string username;
 	string opponent_username;
 } fr_playing;
 
@@ -80,6 +71,26 @@ typedef struct {
 	fr_pointing pointing;
 	fr_playing playing;
 } frames_t;
+
+
+typedef enum {
+	pointing,
+	playing,
+	gameover,
+} gameplay_state;
+
+typedef struct {
+	Circle circle;
+	SDL_FRect block_left;
+	SDL_FRect block_right;
+} gameplay_objects;
+
+typedef struct {
+	gameplay_state state;
+	text_component username_left;
+	text_component username_right;
+	gameplay_objects objects;
+} gameplay_data;
 
 
 	//
@@ -116,9 +127,10 @@ typedef struct {
 	Uint32 read_event_type;
 	frame current_frame;
 	frames_t frames;
-	char* username;
+	char username[MAX_USERNAME_CHARS];
+	char opponent_username[MAX_USERNAME_CHARS];
 	fr_handler handlers[5];
-	
+	gameplay_data gameplay;
 } App;
 
 

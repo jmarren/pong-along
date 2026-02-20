@@ -27,6 +27,10 @@ add_executable(client WIN32
 	# client/view/dashboard.h
 	client/view/text.c
 	client/view/text.h
+	client/view/rect.c
+	client/view/rect.h
+	client/view/circle.c
+	client/view/circle.h
 	client/net/net.c
 	client/net/net.h
 	client/net/tcp.c
@@ -43,11 +47,17 @@ add_executable(client WIN32
 	client/frames/enter_username.h
 	client/frames/select_opponent.c
 	client/frames/select_opponent.h
+	client/frames/pointing.c
+	client/frames/pointing.h
+	client/frames/gameplay.c
+	client/frames/gameplay.h
 	client/renderer.c
 	client/renderer.h
 	dsa/string.c
 	dsa/string.h
+	shared/macro.h
 
+	
 	# client/view/circle.c
 	# client/view/circle.h
 	# client/view/physics.c
@@ -86,6 +96,7 @@ add_executable(server WIN32
 	dsa/array.h
 	dsa/string.c
 	dsa/string.h
+	shared/macro.h
 )
 
 # Link to the actual SDL3 library.

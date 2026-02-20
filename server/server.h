@@ -1,14 +1,23 @@
 #ifndef SERVER_H
 #define SERVER_H
- 
 
-// #include "models/users.h"
 #include "uv.h"
-#include "models/users.h"
+#include "../../../shared/macro.h"
 
 
 typedef struct {
-	user_arr active_users;
+	char username[MAX_USERNAME_CHARS];
+	uv_stream_t* stream;
+} user_t;
+
+typedef struct {
+	int len;
+	user_t users[MAX_ACTIVE_USERS];
+} active_users;
+
+
+typedef struct {
+	active_users active_users;
 	uv_loop_t* loop;
 	uv_tcp_t tcp_server;
 	uv_udp_t udp_server;

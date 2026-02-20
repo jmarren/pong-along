@@ -58,9 +58,15 @@ void read_data(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
 	// set event type 
 	event.type = read_event_type;
 	
-	// set data1 to the buffer base pointer
-	event.data1 = (void*)buf->base;
+	printf("buf->base = %s\n", buf->base);
 	
+	event.data1 = (char*)calloc(strlen(buf->base), sizeof(char));
+	// event.data1[0] = '\0';
+
+	// event.data1 = calloc(strlen(buf->base), sizeof(char));
+	strncat(event.data1, buf->base, strlen(buf->base));
+	printf("event.data1 = %s\n", (char*)event.data1);
+
 	// push event to SDL loop
     	SDL_PushEvent((SDL_Event*)&event);
     }

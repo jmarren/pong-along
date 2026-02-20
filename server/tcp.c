@@ -28,6 +28,8 @@ void handle_tcp_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
 	for (int i = 0; i < msg_list.count; i++) {
 		message msg = parse_message(msg_list.messages[i]);
 
+		printf("got msg.type = %s\n", msg.type);
+
 		if (strcmp(msg.type, "username") == 0) {
 			handle_username(server, client, &msg);
 		}

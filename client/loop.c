@@ -9,12 +9,60 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "client.h"
-#include "frames/enter_username.h"
-#include "frames/select_opponent.h"
+#include "../../../shared/parse.h"
 
 #define QUIT 1
 #define CONTINUE 0
 
+
+void add_opponent(App* app, char* opp_username) {
+	player_component_list* players = &(app->frames.select_opponent.player_components);
+
+	int last_index = players->len;
+	players->base[last_index].text = opp_username;
+	players->len++;
+	printf("added opponent\n");
+}
+
+void handle_message(App* app, message* msg) {
+	
+	printf("handling players\n");
+	printf("msg->type = %s\n", msg->type);
+	printf("msg->content = %s\n", msg->content);
+
+
+	if (strcmp(msg->type, "players") == 0) {
+		const char s = ','; // Delimiter: comma
+		char *token;
+
+		// Get the first token
+		// The first call to strtok() uses the original string
+		token = strtok(msg->content, &s);
+
+		// Walk through other tokens
+		while (token != NULL) {
+			if (strlen(token) > 0) {
+				add_opponent(app, token);
+			}
+
+			token = strtok(NULL, &s);
+		}
+	}
+}
+
+
+void handle_read_event(App* app, SDL_UserEvent* evt) {
+	// char* data1 = (char*)evt->data1;
+
+	raw_msg_list raw_msgs;
+	raw_msgs = parse_messages(evt->data1);
+	print_raw_messages(&raw_msgs);
+	message_list msgs = parse_raw_message_list(&raw_msgs);
+
+	for (int i = 0; i < msgs.len; i++) {
+		handle_message(app, &(msgs.base[i]));
+	}
+}
 
 
 // handle global events every iteration
@@ -27,6 +75,14 @@ int handle_global_events(App* app, SDL_Event* event) {
 	if (event->key.key == SDLK_ESCAPE) {
 		return QUIT;
 	}
+	if (event->type == app->read_event_type) {
+		// copy the event to a user event
+		SDL_UserEvent evt;
+		memcpy(&evt, event, sizeof(SDL_UserEvent));
+		handle_read_event(app, &evt);
+	}
+	
+
 	return CONTINUE;
 }
 
@@ -47,7 +103,7 @@ int handle_events(App* app) {
 	return CONTINUE;
 }
 
-void render(App* app) {
+static void render(App* app) {
 		app->handlers[app->current_frame].render(app);
 		SDL_RenderPresent(app->renderer);
 }
@@ -56,7 +112,11 @@ void render(App* app) {
 
 void loop_start(App* app) {
 
-	enter_username_init(app);
+	app->handlers[enter_username].init(app);
+	app->handlers[select_opponent].init(app);
+	// app->handlers[pointing].init(app);
+	app->handlers[gameplay].init(app);
+	
 
 	int ticks = SDL_GetTicks();
 

@@ -3,9 +3,12 @@
 #include "../../shared/parse.h"
 #include "../../shared/buffer.h"
 #include "../../shared/callback.h"
+#include "../../shared/macro.h"
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 #include "../server.h"
+#include "../models/users.h"
 
 void handle_selected_opponent(uv_stream_t* client, message* msg) {
 	
@@ -26,36 +29,47 @@ void handle_selected_opponent(uv_stream_t* client, message* msg) {
 
 
 void handle_username(server_t* server, uv_stream_t* client, message* msg) {
-	char* username = calloc(1, strlen(msg->content));
-	strcpy(username, msg->content);
+
+	printf("got username =  %s\n", msg->content);
 
 	// create a new user
 	user_t user = {
-		username,
-		client,
+		.stream = client,
 	};
 
-	append_user_arr(&(server->active_users), &user);
+	// copy in the username
+	strncpy(user.username, msg->content, MAX_USERNAME_CHARS);
+
+	
+	server->active_users.users[server->active_users.len] = user; 
+	server->active_users.len++;
+
 
 }
 
 void handle_players_query(server_t* server, uv_stream_t* client, message* msg) { 
-
-
-	user_arr other_users = filter_not_client(&(server->active_users), client);
-
-	string_arr usernames = get_usernames(&other_users);
+	int usernames_len = (MAX_ACTIVE_USERS * MAX_USERNAME_CHARS);
+	int commas_len = MAX_ACTIVE_USERS;
+	char usernames[usernames_len + commas_len]; 
 	
-	string comma_joined = join_string_arr(&usernames, ", ");
+	printf("players query\n");
+	printf("msg->type = %s\n", msg->type);
+	printf("msg->content = %s\n", msg->content);
+	
+	usernames[0] = '\0';
 
+	get_others(server->active_users, client, usernames);
+	
+	printf("others = %s\n", usernames);
 
 	uv_buf_t wrbuf;
 
-	buffer_encode_assign("players", comma_joined.base, &wrbuf);
+	buffer_encode_assign("players", usernames, &wrbuf);
 		
 	// allocate the write request to write back
 	uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
 
+	printf("sending players response = %s\n", wrbuf.base);
 
 	// write the message back to the client
 	// with buf len of 1 and a write callback that 

@@ -1,5 +1,14 @@
 
-
+#include "rect.h"
 #include <SDL3/SDL_rect.h>
-// void set_rect(SDL_FRect* rect, float x, float y, float h, float 
+
+
+
+extern SDL_FRect title_rect = (SDL_FRect){
+		.x = FR_MARGIN_LEFT,
+		.y = FR_MARGIN_TOP,
+		.w = TEXTBOX_WIDTH,
+		.h = TEXTBOX_HEIGHT,
+};
+
 

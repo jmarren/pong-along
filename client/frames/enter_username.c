@@ -7,43 +7,21 @@
 #include "../client.h"
 #include "../view/text.h"
 #include "../net/tcp.h"
-
-#define HEIGHT 10
-#define WIDTH 1000
-#define FR_MARGIN_LEFT 100
-#define FR_MARGIN_TOP 100
-
-// title 
-#define TITLE_Y 100
-#define TITLE_X LEFT_ALIGN
-#define TITLE_W 1000
+#include "../view/rect.h"
 #define TITLE_H 10
 #define TITLE_TEXT "enter your username"
 
-
-
-
-// title rect
-SDL_FRect title_rect = (SDL_FRect){
-		.x = FR_MARGIN_LEFT,
-		.y = FR_MARGIN_TOP,
-		.w = WIDTH,
-		.h = HEIGHT,
-};
-
 // text_input rect
-SDL_FRect text_input_rect = (SDL_FRect){
+static SDL_FRect text_input_rect = (SDL_FRect){
 		.x = FR_MARGIN_LEFT,
 		.y = FR_MARGIN_TOP + TITLE_H + 10,
-		.w = WIDTH,
-		.h = HEIGHT,
+		.w = TEXTBOX_WIDTH,
+		.h = TEXTBOX_HEIGHT,
 };
 
 // initialize text input component
-void init_text_input(fr_enter_username* frame) {
+static void init_text_input(fr_enter_username* frame) {
 	char* input_text = calloc(10, sizeof(char));
-	// string input_text = create_string();
-	// set_string(&input_text, "");
 	frame->input_component = (text_component){
 		.rect = text_input_rect,
 		.text = input_text,
@@ -51,32 +29,27 @@ void init_text_input(fr_enter_username* frame) {
 }
 
 // initialize text input
-void init_title(fr_enter_username* frame) {
-	// string title_text = create_string();
-	// set_string(&title_text, TITLE_TEXT);
+static void init_title(fr_enter_username* frame) {
 	frame->title_component = (text_component){
 		.rect = title_rect,
 		.text = TITLE_TEXT,
 	};
-	
 }
 
 
-
-void handle_backspace(fr_enter_username* frame) {
+static void handle_backspace(fr_enter_username* frame) {
 	int len = strlen(frame->input_component.text);
 	if (len > 0) {
 		frame->input_component.text[len - 1] = '\0';
 	}
-	// string_truncate(&frame->input_component.text);
 }
 
-void handle_return(App* app) {
+static void handle_return(App* app) {
 	// stop taking input
 	SDL_StopTextInput(app->window);
 
 	// copy text_input to username
-	strncpy(app->username, app->frames.enter_username.input_component.text, 100);
+	strncpy(app->username, app->frames.enter_username.input_component.text, 25);
 
 	// set game phase to pointing
 	app->current_frame = select_opponent;
@@ -86,12 +59,15 @@ void handle_return(App* app) {
 	tcp_write_msg_1("query", "players");
 }
 
-void handle_text_input(fr_enter_username* frame, SDL_Event* event) {
-	strcat(frame->input_component.text, event->text.text);
+static void handle_text_input(fr_enter_username* frame, SDL_Event* event) {
+	int len = strlen(frame->input_component.text);
+	if (len < MAX_USERNAME_CHARS) {
+		strcat(frame->input_component.text, event->text.text);
+	}
 }
 
 
-void enter_username_init(App* app) {
+static void init(App* app) {
 	fr_enter_username* fr = &(app->frames.enter_username);
 	SDL_StartTextInput(app->window);
 	init_text_input(fr);
@@ -99,7 +75,7 @@ void enter_username_init(App* app) {
 }
 
 
-void enter_username_input(App* app, SDL_Event* event) {
+static void input(App* app, SDL_Event* event) {
 	
 	fr_enter_username* fr = &(app->frames.enter_username);
 
@@ -122,7 +98,7 @@ void enter_username_input(App* app, SDL_Event* event) {
 
 
 
-void enter_username_render(App* app) {
+static void render(App* app) {
 	SDL_Renderer* renderer = app->renderer;
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderClear(renderer);
@@ -137,9 +113,9 @@ void enter_username_render(App* app) {
 
 
 extern fr_handler h_enter_username = (fr_handler){
-	.init = (init_handler*)enter_username_init,
-	.input = (input_handler*)enter_username_input,
-	.render = (render_handler*)enter_username_render,
+	.init = (init_handler*)init,
+	.input = (input_handler*)input,
+	.render = (render_handler*)render,
 };
 
 

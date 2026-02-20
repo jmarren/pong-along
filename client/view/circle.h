@@ -6,11 +6,12 @@
 #include "../client.h"
 
 
-void circle_init(App* app);
-void circle_render(App* app);
-void circle_bounce_wall_left_right(App* app);
-void circle_move(App* app);
+// void circle_init(App* app);
+// void circle_render(App* app);
+// void circle_bounce_wall_left_right(App* app);
+// void circle_move(App* app);
 
+void render_circle(SDL_Renderer* renderer, Circle* circle);
 #endif
 
 

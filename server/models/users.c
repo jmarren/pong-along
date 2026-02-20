@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../../dsa/array.h"
-#include "../../dsa/string.h"
+#include "../server.h"
 
 #define SUCCESS 0
 #define FAIL 1
@@ -12,45 +12,50 @@
 
 DEFINE_ARR_FUNCTIONS(user_arr, user_t);
 
-void print_user_t(user_t* user) { 
-	printf("%s\n", user->username);
-}
 
-char* stringify_user_t(user_t* user) { 
-	return user->username;
-}
 
-void user_print_username(user_t user) {
-	printf("username = %s\n", user.username);
-}
 
-void print_usernames(user_arr* arr) {
-	for_each_user_arr(arr, &user_print_username);
-}
-
-string_arr get_usernames(user_arr* arr) {
-	string_arr str_arr = create_string_arr();
-	
-	for (int i = 0; i < arr->len; i++) {
-		string str = create_string();
-		set_string(&str, arr->base[i].username);
-		append_string_arr(&str_arr, &str);	
-	}
-	return str_arr;
-}
-
-user_arr filter_not_client(user_arr* users, uv_stream_t* client) {
-
-	user_arr others = create_user_arr();
-
-	for (int i = 0; i < users->len; i++) {
-		if (users->base[i].stream != client) { 
-			append_user_arr(&others, &(users->base[i]));
+// string_arr get_usernames(user_arr* arr) {
+// 	string_arr str_arr = create_string_arr();
+//
+// 	for (int i = 0; i < arr->len; i++) {
+// 		string str = create_string();
+// 		set_string(&str, arr->base[i].username);
+// 		append_string_arr(&str_arr, &str);	
+// 	}
+// 	return str_arr;
+// }
+//
+// user_arr filter_not_client(user_arr* users, uv_stream_t* client) {
+//
+// 	user_arr others = create_user_arr();
+//
+// 	for (int i = 0; i < users->len; i++) {
+// 		if (users->base[i].stream != client) { 
+// 			append_user_arr(&others, &(users->base[i]));
+// 		}
+// 	}
+//
+// 	return others;
+//
+// }
+//
+void get_others(active_users active_users, uv_stream_t* client, char* others) {
+	char* other_users[MAX_ACTIVE_USERS];
+	int j = 0;
+	for (int i = 0; i < active_users.len; i++) { 
+		if (active_users.users[i].stream != client) {
+			other_users[j] = active_users.users[i].username;
+			j++;
 		}
 	}
-		
-	return others;
 
+	for (int i = 0; i < j; i++) {
+		strcat(others, other_users[i]);
+		if (i < j - 1) { 
+			strcat(others, ",");
+		}
+	} 
 }
 
 
