@@ -13,6 +13,8 @@
 
 void render_circle(SDL_Renderer* renderer, Circle* circle);
 void move_circle(Circle* circle);
+void circle_bounce_wall_left_right(Circle* circle);
+
 #endif
 
 

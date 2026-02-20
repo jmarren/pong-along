@@ -138,8 +138,23 @@ static void handle_input_pointing(App* app, SDL_Event* event) {
 	}
 }
 
+static void block_left_up(App* app) {
+	app->gameplay.objects.block_left.y -= 10;
+}
+
+static void block_left_down(App* app) {
+	app->gameplay.objects.block_left.y += 10;
+}
+
 static void handle_input_playing(App* app, SDL_Event* event) {
-	
+	switch (event->key.key) {
+		case SDLK_UP:
+			block_left_up(app);
+			break;
+		case SDLK_DOWN:
+			block_left_down(app);
+			break;
+	}
 }
 
 
@@ -158,26 +173,34 @@ static void input(App* app, SDL_Event* event) {
 }
 
 
-// void circle_move(App* app)  {
-//     	Circle* circle = &(app->circle);
-// 	// if (circle.obj.pos.x + circle.radius  >= WINDOW_W) {
-// 	// 	circle.obj.pos.x = WINDOW_W - circle.radius;
-// 	// 	circle_bounce_wall_left_right();
-// 	//
-// 	// } else if (circle.obj.pos.x  - circle.radius <= 0) {
-// 	// 	circle.obj.pos.x = circle.radius;
-// 	// 	circle_bounce_wall_left_right();
-// 	 if (circle->obj.pos.y + circle->radius >= WINDOW_H) { 
-// 		circle->obj.pos.y = WINDOW_H - circle->radius;
-// 		circle_bounce_wall_top_bottom(app);
-//
-// 	} else if (circle->obj.pos.y - circle->radius <= 0) {
-// 		circle->obj.pos.y = circle->radius;
-// 		circle_bounce_wall_top_bottom(app);
-// 	}
-//
-// 	physics_move_obj((Object *)&circle->obj);
-// }
+void handle_collisions(App *app) {
+
+		gameplay_objects* objs = &(app->gameplay.objects);
+		
+		Circle* circle = &(objs->circle);
+		float circlex = circle->obj.pos.x;
+		float circley = circle->obj.pos.y;
+		float rect_right_x = objs->block_right.x;
+		float rect_right_y = objs->block_right.y;
+		float rect_left_x = objs->block_left.x;
+		float rect_left_y = objs->block_left.y;
+		float rect_left_h = objs->block_left.h;
+		float rect_right_h = objs->block_right.h;
+
+
+		if (circlex + circle->radius >= rect_right_x && 
+		    circley - circle->radius <= rect_right_y + rect_right_h &&
+		    circley + circle->radius >= rect_right_y
+		) {
+			circle_bounce_wall_left_right(circle);
+		} else if (circlex - circle->radius <= rect_left_x && 
+		    circley - circle->radius <= rect_left_y + rect_left_h &&
+		    circley + circle->radius >= rect_left_y
+		) {
+			circle_bounce_wall_left_right(circle);
+		}
+
+}
 
 
 
@@ -190,11 +213,9 @@ static void render(App* app) {
 	render_usernames(app);
 	
 	if (app->gameplay.state == playing) { 
+		handle_collisions(app);
 		move_circle(&(app->gameplay.objects.circle));
 	}
-
-	printf("app->gameplay.objects.circle.obj.pos.x = %f\n", app->gameplay.objects.circle.obj.pos.x);
-
 	render_circle(renderer, &(app->gameplay.objects.circle));
 	render_blocks(app);
 	switch (app->gameplay.state) {

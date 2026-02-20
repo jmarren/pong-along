@@ -164,6 +164,8 @@ void render_circle(SDL_Renderer *renderer, Circle *circle) {
 // }
 
 
+// void circle_reverse_x
+
 void circle_bounce_wall_left_right(Circle* circle) {
 	circle->obj.direction = M_PI - circle->obj.direction;
 }
