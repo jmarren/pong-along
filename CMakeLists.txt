@@ -1,5 +1,3 @@
-
-
 cmake_minimum_required(VERSION 3.16)
 project(client)
 project(server)
@@ -90,6 +88,8 @@ add_executable(server WIN32
 	server/handlers/handlers.h
 	server/models/users.c
 	server/models/users.h
+	server/models/invites.c
+	server/models/invites.h
 	shared/buffer.c
 	shared/buffer.h
 	shared/encode.c

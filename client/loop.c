@@ -15,7 +15,7 @@
 #define CONTINUE 0
 
 
-void add_opponent(App* app, char* opp_username) {
+void add_potential_opponent(App* app, char* opp_username) {
 	player_component_list* players = &(app->frames.select_opponent.player_components);
 
 	int last_index = players->len;
@@ -42,7 +42,7 @@ void handle_message(App* app, message* msg) {
 		// Walk through other tokens
 		while (token != NULL) {
 			if (strlen(token) > 0) {
-				add_opponent(app, token);
+				add_potential_opponent(app, token);
 			}
 
 			token = strtok(NULL, &s);
@@ -52,8 +52,6 @@ void handle_message(App* app, message* msg) {
 
 
 void handle_read_event(App* app, SDL_UserEvent* evt) {
-	// char* data1 = (char*)evt->data1;
-
 	raw_msg_list raw_msgs;
 	raw_msgs = parse_messages(evt->data1);
 	print_raw_messages(&raw_msgs);
@@ -116,6 +114,8 @@ void loop_start(App* app) {
 	app->handlers[select_opponent].init(app);
 	// app->handlers[pointing].init(app);
 	app->handlers[gameplay].init(app);
+
+	printf("loop start\n");
 	
 
 	int ticks = SDL_GetTicks();

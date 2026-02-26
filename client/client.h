@@ -14,6 +14,9 @@
 
 
 
+#define WINDOW_W 2000
+#define WINDOW_H 1000
+
 typedef struct {
 	Object obj;
 	int radius;

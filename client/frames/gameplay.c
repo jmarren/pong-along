@@ -2,11 +2,14 @@
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "../client.h"
 #include "../view/rect.h"
 #include "../view/text.h"
 #include "../view/circle.h"
 #include "../view/line.h"
+// #include "../view/view.h"
+#include "../net/udp.h"
 
 #define BLOCK_W 25
 #define BLOCK_H 150
@@ -22,7 +25,7 @@ static SDL_FRect username_left = (SDL_FRect){
 
 
 static SDL_FRect username_right = (SDL_FRect){
-	.x = 500,
+	.x = WINDOW_W - 50,
 	.y = TEXTBOX_HEIGHT + 10,
 	.w = TEXTBOX_WIDTH,
 	.h = TEXTBOX_HEIGHT,
@@ -37,7 +40,7 @@ static SDL_FRect block_left = (SDL_FRect){
 
 
 static SDL_FRect block_right = (SDL_FRect){
-	.x = FR_MARGIN_LEFT + 1000,
+	.x = WINDOW_W - 50,
 	.y = 100,
 	.w = BLOCK_W,
 	.h = BLOCK_H,
@@ -94,7 +97,6 @@ static void init_angle_indicator(App* app) {
 	line.tailx = line.originx + cos(circle->obj.direction) * 100;
 	line.taily = line.originy + sin(circle->obj.direction) * 100;
 	app->gameplay.objects.line = line;
-
 }
 
 
@@ -139,11 +141,30 @@ static void handle_input_pointing(App* app, SDL_Event* event) {
 }
 
 static void block_left_up(App* app) {
-	app->gameplay.objects.block_left.y -= 10;
+	SDL_FRect* block = &(app->gameplay.objects.block_left);
+	// check that block is in bounds
+	if (block->y > 0) {
+		block->y -= 10;
+	} 
+
+
 }
 
 static void block_left_down(App* app) {
-	app->gameplay.objects.block_left.y += 10;
+	SDL_FRect* block = &(app->gameplay.objects.block_left);
+	// check that block is in bounds
+	if (block->y < WINDOW_H) {
+		block->y += 10;
+	}
+	
+	char* block_position = calloc(7, sizeof(char));
+
+	sprintf(block_position, "%f.0", block->y);
+
+	udp_write_msg_1("block", block_position);
+
+	// encode_message(char *type, char *content)
+	// udp_write(
 }
 
 static void handle_input_playing(App* app, SDL_Event* event) {

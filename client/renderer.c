@@ -1,25 +1,46 @@
 
 #include "../vendored/SDL_ttf/include/SDL3_ttf/SDL_ttf.h"
-#include "view/view.h"
+#include "client.h"
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_render.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 
-// static SDL_Texture *texture = NULL;
 static TTF_Font *font = NULL;
 
 extern unsigned char tiny_ttf[];
 extern unsigned int tiny_ttf_len;
 
+
 int init_renderer(App* app) {
-    	if (!SDL_CreateWindowAndRenderer("Hello World", WINDOW_W, WINDOW_H, SDL_WINDOW_FULLSCREEN, &(app->window), &(app->renderer))) {
+	printf("starting init_renderer\n");
+	printf("read_event_type = %d\n", app->read_event_type);
+
+	SDL_Window** window = &(app->window);
+	SDL_Renderer** renderer = &(app->renderer);
+		
+	bool create_window = SDL_CreateWindowAndRenderer("Hello World", WINDOW_W, WINDOW_H, SDL_WINDOW_FULLSCREEN, window, renderer);
+
+
+	printf("create_window = %d\n", create_window);
+
+	fflush(stdout);
+
+    	if (!create_window) {
 		SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
+		printf("failed to create window\n");
+	        fflush(stdout);
 		return SDL_APP_FAILURE;
     	}
+	printf("created window and renderer\n");
+	fflush(stdout);
 
 
 	if (!TTF_Init()) {
 		SDL_Log("Couldn't initialize SDL_ttf: %s\n", SDL_GetError());
+		printf("failed to init tff\n");
+	        fflush(stdout);
 		return SDL_APP_FAILURE;
 	}
 
@@ -29,6 +50,8 @@ int init_renderer(App* app) {
 
         if (!font) {
 	  SDL_Log("Couldn't open font: %s\n", SDL_GetError());
+   	  printf("failed to open font\n");
+	  fflush(stdout);
 	  return SDL_APP_FAILURE;
         }
 

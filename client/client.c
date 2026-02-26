@@ -17,7 +17,7 @@
 #include <uv.h>
 #include "frames/enter_username.h"
 #include "frames/select_opponent.h"
-#include "frames/pointing.h"
+// #include "frames/pointing.h"
 #include "frames/gameplay.h"
 
 
@@ -30,16 +30,18 @@ App app;
 int main(int argc, char *argv[])
 {
 
+	printf("client\n");
+
 	app.current_frame = initializing;
 
 	app.read_event_type = SDL_RegisterEvents(1);
 
+	printf("init renderer start\n");
 	init_renderer(&app);
-
+	printf("init renderer end\n");
 	app.handlers[enter_username] = h_enter_username;
 	app.handlers[select_opponent] = h_select_opponent;
 	app.handlers[gameplay] = h_gameplay;
-
 
 	pthread_t thread_id;
 

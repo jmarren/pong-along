@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../../dsa/array.h"
+// #include "../../dsa/array.h"
 #include "../server.h"
 
 #define SUCCESS 0
@@ -10,36 +10,15 @@
 
 
 
-DEFINE_ARR_FUNCTIONS(user_arr, user_t);
 
 
+void create_user(uv_stream_t* stream, char* username) {
+	user_t user;
+	user.stream = stream;
+	// user.write_tcp = tcp_write_msg_1(char *type, char *content)
 
+}
 
-// string_arr get_usernames(user_arr* arr) {
-// 	string_arr str_arr = create_string_arr();
-//
-// 	for (int i = 0; i < arr->len; i++) {
-// 		string str = create_string();
-// 		set_string(&str, arr->base[i].username);
-// 		append_string_arr(&str_arr, &str);	
-// 	}
-// 	return str_arr;
-// }
-//
-// user_arr filter_not_client(user_arr* users, uv_stream_t* client) {
-//
-// 	user_arr others = create_user_arr();
-//
-// 	for (int i = 0; i < users->len; i++) {
-// 		if (users->base[i].stream != client) { 
-// 			append_user_arr(&others, &(users->base[i]));
-// 		}
-// 	}
-//
-// 	return others;
-//
-// }
-//
 void get_others(active_users active_users, uv_stream_t* client, char* others) {
 	char* other_users[MAX_ACTIVE_USERS];
 	int j = 0;
@@ -59,18 +38,53 @@ void get_others(active_users active_users, uv_stream_t* client, char* others) {
 }
 
 
+user_t* get_user_with_username(server_t* server, char* username) {
+	printf("getting user w/ username\n");
+
+	active_users* users = &(server->active_users);
 
 
-// #define DECLARE_VAR(TYPE, NAME) TYPE NAME
+	for (int i = 0; i < users->len; i++) {
+		if (strcmp(users->users[i].username, username) == 0) {
+			return &(users->users[i]);
+		}
+	}
+	return NULL;
+}
 
-// #define ARRAY_CREATE(x) (
-//
-// )
+user_t*  get_user_from_stream(server_t* server, uv_stream_t* stream) {
+	active_users* users = &(server->active_users);
 
-// users_arr* users_arr_create(void) {
-// 	array ret = array_create();
-// 	return (users_arr*)&ret;
-// }
+	for (int i = 0; i < users->len; i++) {
+		if (users->users[i].stream == stream) {
+			return &(users->users[i]);
+		}
+	}
+
+	return NULL;
+}
+
+
+int set_opponent(server_t* server, uv_stream_t* client, char* opponent_username) {
+	user_t* opponent;
+	user_t* caller;
+
+ 	opponent = get_user_with_username(server, opponent_username);
+	caller = get_user_from_stream(server, client);
+	
+	if (opponent == NULL || caller == NULL) {
+		return 1;
+	}		
+
+	caller->opponent = opponent;
+	opponent->opponent = caller;
+	printf("got opponent username = %s\n", opponent->username);
+	printf("got caller username = %s\n", caller->username);
+	return 0;
+}
+
+
+
 
 
 // initialize a new users_arr

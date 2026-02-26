@@ -1,30 +1,42 @@
 
 #include "uv.h"
 #include "../../shared/parse.h"
-#include "../../shared/buffer.h"
-#include "../../shared/callback.h"
 #include "../../shared/macro.h"
-#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/param.h>
 #include "../server.h"
 #include "../models/users.h"
+#include "../models/invites.h"
+#include "../tcp.h"
 
-void handle_selected_opponent(uv_stream_t* client, message* msg) {
+
+
+void handle_selected_opponent(server_t* server, uv_stream_t* client, message* msg) {
+	printf("selected opponent username = %s\n", msg->content);
 	
-	// initialize write buffer
-	uv_buf_t wrbuf;
+	user_t* invitor = get_user_from_stream(server, client);
+	if (invitor == NULL) {
+		printf("invitor not found\n");
+	}
 
-	// encode to protocol format and assign to write buffer
-	buffer_encode_assign("match", msg->content, &wrbuf);
+	user_t* invitee = get_user_with_username(server, msg->content);
+	if (invitee == NULL) {
+		printf("invitee not found\n");
+	}
+
+	if (invitee == NULL || invitor == NULL) {
+		printf("match failed\n");
+		write_tcp(client, "match", "failed");
+		return;
+	}
+
+	// create_invite(server, invitor, invitee);
 	
-	// allocate the write request to write back
-	uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
-
-	// write the message back to the client
-	// with buf len of 1 and a write callback that 
-	// frees the write request
-	uv_write(req, client, &wrbuf, 1, cb_free_write);
+	// // send the invite to the invitee
+	// write_tcp(invitee->stream, "invite", invitor->username);
+	//
+	// write_tcp(client, "match", msg->content);
 }
 
 
@@ -52,28 +64,11 @@ void handle_players_query(server_t* server, uv_stream_t* client, message* msg) {
 	int commas_len = MAX_ACTIVE_USERS;
 	char usernames[usernames_len + commas_len]; 
 	
-	printf("players query\n");
-	printf("msg->type = %s\n", msg->type);
-	printf("msg->content = %s\n", msg->content);
-	
 	usernames[0] = '\0';
 
 	get_others(server->active_users, client, usernames);
-	
-	printf("others = %s\n", usernames);
 
-	uv_buf_t wrbuf;
+	write_tcp(client, "players", usernames);
 
-	buffer_encode_assign("players", usernames, &wrbuf);
-		
-	// allocate the write request to write back
-	uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
-
-	printf("sending players response = %s\n", wrbuf.base);
-
-	// write the message back to the client
-	// with buf len of 1 and a write callback that 
-	// frees the write request
-	uv_write(req, client, &wrbuf, 1, cb_free_write);
 }
 

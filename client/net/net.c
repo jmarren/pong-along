@@ -8,6 +8,8 @@
 
 
 void net_start(App* app) {
+
+    printf("net start\n");
     // create default loop
     app->loop = uv_default_loop();
 

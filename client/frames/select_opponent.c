@@ -4,6 +4,7 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_render.h>
+#include "../net/tcp.h"
 
 static void render_players(App* app) {
 	player_component_list* players = &(app->frames.select_opponent.player_components);
@@ -93,7 +94,10 @@ static void handle_return(App* app) {
 		
 	strncpy((char*)&(app->opponent_username), opp_name, MAX_USERNAME_CHARS);
 
+	tcp_write_msg_1("selected-opponent", opp_name);
+
 	app->current_frame = gameplay;
+
 }
 
 

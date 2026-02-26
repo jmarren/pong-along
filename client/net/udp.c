@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../client.h"
+#include "../../shared/encode.h"
 
 static uv_udp_t* udp_handle;
 static struct sockaddr_in udp_dest;
@@ -69,3 +70,15 @@ void udp_write(char* message) {
     }
 
 }
+
+/* write a message type and content to the connection */
+void udp_write_msg_1(char* type, char* content) {
+
+	// encode to protocol format 
+	char* str = encode_message(type, content);
+
+	// write to connection
+	udp_write(str);
+
+}
+

@@ -5,7 +5,7 @@
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_render.h>
 #include "physics.h"
-#include "view.h"
+#include "../client.h"
 
 
 

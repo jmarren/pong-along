@@ -24,6 +24,10 @@ DEFINE_ARR_H(user_arr, user_t);
 typedef bool (user_to_bool)(user_t* user);
 typedef void (user_to_void)(user_t* user);
 typedef void* (user_to_void_ptr)(user_t* user);
+
+// user_t* get_user_with_username(server_t* server, char* username);
+
+int set_opponent(server_t* server, uv_stream_t* client, char* opponent_username);
 void users_arr_init(users_arr* users_arr, int initial_cap, int max_cap);
 // int users_arr_expand(users_arr* users_arr);
 user_t* users_arr_get_last(users_arr* users_arr);
@@ -38,6 +42,8 @@ void users_arr_print_usernames(users_arr* src);
 
 user_arr filter_not_client(user_arr* users, uv_stream_t* client);
 void get_others(active_users active_users, uv_stream_t* client, char* others);
+user_t* get_user_with_username(server_t* server, char* username);
+user_t*  get_user_from_stream(server_t* server, uv_stream_t* stream);
 
 string_arr get_usernames(user_arr* arr);
 #endif

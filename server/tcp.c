@@ -7,15 +7,31 @@
 #include <string.h>
 #include "../shared/parse.h"
 #include "../shared/buffer.h"
+#include "../shared/callback.h"
 #include "handlers/handlers.h"
 
 #define BACKLOG 1000
 #define TCP_PORT 7000
 
 static server_t* server;
+ 
 
+void write_tcp(uv_stream_t* client, char* type, char* content) {
+	uv_buf_t wrbuf;
+	// encode to protocol format and assign to write buffer
+	buffer_encode_assign(type, content, &wrbuf);
+	
+	// allocate the write request to write back
+	uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
 
-void handle_tcp_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
+	// write the message back to the client
+	// with buf len of 1 and a write callback that 
+	// frees the write request
+	uv_write(req, client, &wrbuf, 1, cb_free_write);
+
+}
+
+void handle_tcp_read(uv_stream_t* client, ssize_t nread, const uv_buf_t *buf) {
     if (nread < 0) {
         if (nread != UV_EOF) {
             fprintf(stderr, "Read error %s\n", uv_err_name(nread));
@@ -35,7 +51,7 @@ void handle_tcp_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
 		}
 
 		if (strcmp(msg.type, "selected-opponent") == 0) {
-			handle_selected_opponent(client, &msg);
+			handle_selected_opponent(server, client, &msg);
 		}
 
 		if (strcmp(msg.type, "query") == 0) {

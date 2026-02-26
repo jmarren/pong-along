@@ -68,6 +68,7 @@ static void handle_text_input(fr_enter_username* frame, SDL_Event* event) {
 
 
 static void init(App* app) {
+	printf("enter_username init\n");
 	fr_enter_username* fr = &(app->frames.enter_username);
 	SDL_StartTextInput(app->window);
 	init_text_input(fr);
